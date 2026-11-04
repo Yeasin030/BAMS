@@ -7,65 +7,12 @@
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <style>
-    :root{--navy:#15243a;--muted:#78869a;--line:#e8edf3;--soft:#f5f7fb;--blue:#356df3;--green:#159b72}
-    *{box-sizing:border-box} body{font-family:'DM Sans',sans-serif;background:#f6f8fb;color:#1e293b;font-size:14px}
-    h1,h2,h3,h4,h5,.brand{font-family:'Manrope',sans-serif}
-    .app-shell{min-height:100vh}.sidebar{width:258px;background:#fff;border-right:1px solid var(--line);position:fixed;inset:0 auto 0 0;z-index:1040;overflow-y:auto;transition:.25s}
-    .brand-wrap{height:76px;display:flex;align-items:center;padding:0 24px;border-bottom:1px solid var(--line)}
-    .brand-mark{width:34px;height:34px;border-radius:11px;background:#eaf0ff;color:var(--blue);display:grid;place-items:center;font-size:19px;margin-right:10px}
-    .brand{font-weight:800;font-size:18px;letter-spacing:-.6px}.brand span{color:var(--blue)}
-    .company-switch{margin:18px 14px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#fbfcfe}
-    .nav-label{font-size:10px;font-weight:700;letter-spacing:1.2px;color:#a0aaba;padding:18px 24px 8px;text-transform:uppercase}
-    .side-link{display:flex;align-items:center;gap:12px;margin:2px 12px;padding:10px 13px;border-radius:9px;color:#69788d;text-decoration:none;font-weight:600;cursor:pointer}
-    .side-link i{font-size:17px;width:20px;text-align:center}.side-link:hover{background:#f4f7ff;color:var(--blue)}.side-link.active{background:#edf2ff;color:var(--blue)}
-    .main{margin-left:258px;min-height:100vh}.topbar{height:76px;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 30px;position:sticky;top:0;z-index:1000}
-    .content{padding:28px 30px 40px;max-width:1600px;margin:auto}.page-title{font-size:23px;font-weight:800;letter-spacing:-.7px}.sub-title{color:var(--muted);font-size:13px}
-    .card{border:1px solid var(--line);border-radius:14px;box-shadow:0 2px 8px rgba(25,45,75,.025)}.card-header{background:#fff;border-bottom:1px solid var(--line);padding:17px 20px;border-radius:14px 14px 0 0!important}
-    .metric-card{padding:19px 20px;height:100%}.metric-icon{width:40px;height:40px;border-radius:12px;display:grid;place-items:center;font-size:18px}
-    .metric-value{font:800 24px 'Manrope';letter-spacing:-.7px;margin:13px 0 3px}.metric-label{color:var(--muted);font-size:12px;font-weight:600}
-    .tiny-change{font-size:11px;font-weight:700;color:var(--green)}.table{--bs-table-bg:transparent;margin-bottom:0}.table th{font-size:10px;text-transform:uppercase;letter-spacing:.7px;color:#8a97a8;font-weight:700;padding:13px 16px;white-space:nowrap;border-bottom-color:var(--line)}.table td{padding:14px 16px;vertical-align:middle;border-bottom-color:#eff2f6;font-size:13px}.table tr:last-child td{border-bottom:0}
-    .avatar{width:32px;height:32px;border-radius:10px;display:inline-grid;place-items:center;background:#edf2ff;color:#356df3;font-weight:700;font-size:11px;margin-right:9px}
-    .badge-soft{padding:5px 9px;border-radius:20px;font-size:10px;font-weight:700}.status-paid{background:#e7f8f1;color:#13845f}.status-pending{background:#fff5df;color:#b7791f}.status-overdue{background:#ffebeb;color:#c24141}.status-draft{background:#eef1f5;color:#69788d}
-    .btn-primary{background:var(--blue);border-color:var(--blue)}.btn-primary:hover{background:#2558d7;border-color:#2558d7}.btn-light{border:1px solid var(--line);background:#fff}
-    .form-control,.form-select{border-color:#e2e8f0;border-radius:9px;padding:9px 12px;font-size:13px}.form-control:focus,.form-select:focus{border-color:#9db6ff;box-shadow:0 0 0 .2rem rgba(53,109,243,.1)}
-    .section{display:none}.section.active{display:block}.quick-action{border:1px solid var(--line);border-radius:12px;padding:14px;background:#fff;text-align:left;width:100%;height:100%;transition:.2s}.quick-action:hover{border-color:#b7c9ff;transform:translateY(-2px)}.quick-action i{font-size:20px;color:var(--blue)}.quick-action strong{display:block;margin-top:8px;font-size:12px}
-    .chart-placeholder{height:235px}.progress{height:7px;background:#edf1f6}.progress-bar{border-radius:10px}.search-box{position:relative}.search-box i{position:absolute;left:12px;top:10px;color:#9aa6b5}.search-box input{padding-left:35px}
-    .mobile-menu{display:none}.empty-note{color:#94a0af;text-align:center;padding:36px 12px}.modal-content{border:0;border-radius:16px;box-shadow:0 18px 60px rgba(20,35,60,.18)}.modal-header{border-bottom:1px solid var(--line)}
-    @media(max-width:991px){.sidebar{transform:translateX(-100%)}.sidebar.show{transform:translateX(0);box-shadow:10px 0 35px #172b4d22}.main{margin-left:0}.mobile-menu{display:inline-flex}.topbar{padding:0 18px}.content{padding:22px 18px}}
-    @media(max-width:575px){.content{padding:18px 12px}.topbar{height:64px}.page-title{font-size:20px}.hide-mobile{display:none!important}.metric-value{font-size:21px}}
-  </style>
+  <link href="assets/css/style.css" rel="stylesheet">
 </head>
 <body>
 <div class="app-shell">
-  <aside class="sidebar" id="sidebar">
-    <div class="brand-wrap"><div class="brand-mark"><i class="bi bi-grid-1x2-fill"></i></div><div class="brand">Biz<span>Ledger</span></div></div>
-    <div class="company-switch d-flex align-items-center">
-      <div class="rounded-3 bg-primary-subtle text-primary d-grid place-items-center me-2" style="width:34px;height:34px"><i class="bi bi-buildings"></i></div>
-      <div class="flex-grow-1"><div class="fw-bold small">Acme Business Ltd.</div><div class="text-secondary" style="font-size:10px">Business workspace</div></div>
-      <i class="bi bi-chevron-expand text-secondary"></i>
-    </div>
-    <div class="nav-label">Workspace</div>
-    <a class="side-link active" data-page="dashboard"><i class="bi bi-columns-gap"></i>Dashboard</a>
-    <a class="side-link" data-page="accounts"><i class="bi bi-wallet2"></i>Chart of Accounts</a>
-    <a class="side-link" data-page="journal"><i class="bi bi-journal-text"></i>Journal Entries</a>
-    <div class="nav-label">Transactions</div>
-    <a class="side-link" data-page="sales"><i class="bi bi-receipt"></i>Sales</a>
-    <a class="side-link" data-page="purchases"><i class="bi bi-cart3"></i>Purchases</a>
-    <a class="side-link" data-page="income"><i class="bi bi-graph-up-arrow"></i>Income</a>
-    <a class="side-link" data-page="expenses"><i class="bi bi-graph-down-arrow"></i>Expenses</a>
-    <a class="side-link" data-page="payments"><i class="bi bi-credit-card"></i>Payments</a>
-    <div class="nav-label">Manage</div>
-    <a class="side-link" data-page="customers"><i class="bi bi-people"></i>Customers</a>
-    <a class="side-link" data-page="suppliers"><i class="bi bi-truck"></i>Suppliers</a>
-    <a class="side-link" data-page="products"><i class="bi bi-box-seam"></i>Products & Stock</a>
-    <a class="side-link" data-page="employees"><i class="bi bi-person-badge"></i>Employees & Payroll</a>
-    <div class="nav-label">Reports & Settings</div>
-    <a class="side-link" data-page="reports"><i class="bi bi-bar-chart-line"></i>Financial Reports</a>
-    <a class="side-link" data-page="users"><i class="bi bi-shield-lock"></i>Users & Roles</a>
-    <a class="side-link" data-page="settings"><i class="bi bi-gear"></i>Settings</a>
-    <div class="p-3 mt-3"><div class="rounded-3 p-3" style="background:#f5f7fb"><div class="fw-bold small mb-1">Need help?</div><div class="text-secondary" style="font-size:11px">Manage your business with confidence.</div><a href="#" class="small text-primary text-decoration-none fw-bold">View help center <i class="bi bi-arrow-up-right"></i></a></div></div>
-  </aside>
+    // Sidebar
+    <?php include 'assets/include/sidebar.php'; ?>
 
   <main class="main">
     <header class="topbar">
