@@ -1,4 +1,20 @@
 <header class="topbar">
-      <div class="d-flex align-items-center gap-3"><button class="btn btn-light mobile-menu" id="menuBtn"><i class="bi bi-list fs-5"></i></button><div><div class="fw-bold" id="topTitle">Dashboard</div><div class="text-secondary small hide-mobile">Welcome back! Here's your business overview.</div></div></div>
-      <div class="d-flex align-items-center gap-3"><button class="btn btn-light position-relative"><i class="bi bi-bell"></i><span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span></button><div class="d-flex align-items-center gap-2"><div class="avatar mb-0">YA</div><div class="hide-mobile"><div class="fw-bold small">Yeasin Arafat</div><div class="text-secondary" style="font-size:10px">Administrator</div></div><i class="bi bi-chevron-down small text-secondary"></i></div></div>
-    </header>
+    <div class="d-flex align-items-center gap-3"><button class="btn btn-light mobile-menu" id="menuBtn"><i
+                class="bi bi-list fs-5"></i></button>
+        <div>
+            <div class="fw-bold" id="topTitle">Dashboard</div>
+            <div class="text-secondary small hide-mobile">Welcome back! Here's your business overview.</div>
+        </div>
+    </div>
+    <div class="d-flex align-items-center gap-3"><button class="btn btn-light position-relative"><i
+                class="bi bi-bell"></i><span
+                class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span></button>
+        <div class="d-flex align-items-center gap-2">
+            <div class="avatar mb-0">YA</div>
+            <div class="hide-mobile">
+                <div class="fw-bold small">Yeasin Arafat</div>
+                <div class="text-secondary" style="font-size:10px">Administrator</div>
+            </div><i class="bi bi-chevron-down small text-secondary"></i>
+        </div>
+    </div>
+</header>

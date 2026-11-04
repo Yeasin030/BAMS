@@ -49,13 +49,13 @@ if (isset($_POST['submit'])) {
           <div class="preview-balance">$24,680<span>.00</span></div>
           <div class="preview-caption">Total business balance</div>
           <div class="preview-chart">
-            <span style="--bar-height: 36%"></span>
-            <span style="--bar-height: 51%"></span>
-            <span style="--bar-height: 44%"></span>
-            <span style="--bar-height: 67%"></span>
-            <span style="--bar-height: 56%"></span>
-            <span style="--bar-height: 82%"></span>
-            <span style="--bar-height: 100%"></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
+            <span></span>
           </div>
           <div class="preview-months"><span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span></div>
         </div>
