@@ -1,7 +1,8 @@
 -- Business Account Management System
 -- MySQL 8.0+ / InnoDB
--- Based on the supplied system documentation.
--- Review and test in a development database before production use.
+-- Fixed version: syntax errors corrected, all FOREIGN KEY constraints removed.
+-- Plain indexes are kept on the former FK columns so joins stay fast.
+-- Relationships must be enforced in application code (PHP).
 
 CREATE DATABASE IF NOT EXISTS business_account_management
   CHARACTER SET utf8mb4
@@ -63,16 +64,14 @@ CREATE TABLE users (
     status TINYINT NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_users_company_email (company_id, email),
-    
+    UNIQUE KEY uq_users_company_email (company_id, email)
 ) ENGINE=InnoDB;
 
 CREATE TABLE roles (
     role_id INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
     company_id INT UNSIGNED NOT NULL,
     role_name VARCHAR(80) NOT NULL,
-    UNIQUE KEY uq_roles_company_name (company_id, role_name),
-    
+    UNIQUE KEY uq_roles_company_name (company_id, role_name)
 ) ENGINE=InnoDB;
 
 CREATE TABLE user_roles (
@@ -80,7 +79,7 @@ CREATE TABLE user_roles (
     user_id INT UNSIGNED NOT NULL,
     role_id INT UNSIGNED NOT NULL,
     UNIQUE KEY uq_user_role (user_id, role_id),
-    
+    KEY idx_user_roles_role (role_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE customers (
@@ -93,8 +92,7 @@ CREATE TABLE customers (
     status TINYINT NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    KEY idx_customers_company (company_id),
-    
+    KEY idx_customers_company (company_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE suppliers (
@@ -107,8 +105,7 @@ CREATE TABLE suppliers (
     status TINYINT NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    KEY idx_suppliers_company (company_id),
-    
+    KEY idx_suppliers_company (company_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE account_categories (
@@ -117,8 +114,7 @@ CREATE TABLE account_categories (
     category_name VARCHAR(100) NOT NULL,
     account_type ENUM('ASSET','LIABILITY','EQUITY','REVENUE','EXPENSE') NOT NULL,
     description TEXT NULL,
-    UNIQUE KEY uq_account_category_company_name (company_id, category_name),
-    
+    UNIQUE KEY uq_account_category_company_name (company_id, category_name)
 ) ENGINE=InnoDB;
 
 CREATE TABLE accounts (
@@ -135,8 +131,7 @@ CREATE TABLE accounts (
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_accounts_company_code (company_id, account_code),
     KEY idx_accounts_category (category_id),
-    KEY idx_accounts_parent (parent_account_id),
-    
+    KEY idx_accounts_parent (parent_account_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE products (
@@ -150,8 +145,7 @@ CREATE TABLE products (
     status TINYINT NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE KEY uq_products_company_code (company_id, product_code),
-    
+    UNIQUE KEY uq_products_company_code (company_id, product_code)
 ) ENGINE=InnoDB;
 
 CREATE TABLE employees (
@@ -165,7 +159,7 @@ CREATE TABLE employees (
     status TINYINT NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-   
+    KEY idx_employees_company (company_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE journal_entries (
@@ -184,7 +178,7 @@ CREATE TABLE journal_entries (
     UNIQUE KEY uq_journal_company_number (company_id, journal_number),
     KEY idx_journal_company_date (company_id, transaction_date),
     KEY idx_journal_source (source_type, source_id),
-    
+    KEY idx_journal_created_by (created_by)
 ) ENGINE=InnoDB;
 
 CREATE TABLE journal_lines (
@@ -194,8 +188,8 @@ CREATE TABLE journal_lines (
     description TEXT NULL,
     debit DECIMAL(15,2) NOT NULL DEFAULT 0.00,
     credit DECIMAL(15,2) NOT NULL DEFAULT 0.00,
-    KEY idx_journal_lines_account (account_id),
-   
+    KEY idx_journal_lines_journal (journal_id),
+    KEY idx_journal_lines_account (account_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE income_categories (
@@ -204,7 +198,7 @@ CREATE TABLE income_categories (
     category_name VARCHAR(100) NOT NULL,
     account_id INT UNSIGNED NOT NULL COMMENT 'Revenue account',
     UNIQUE KEY uq_income_categories_company_name (company_id, category_name),
-    
+    KEY idx_income_categories_account (account_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE incomes (
@@ -218,7 +212,10 @@ CREATE TABLE incomes (
     journal_id INT UNSIGNED NULL,
     created_by INT UNSIGNED NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-   
+    KEY idx_incomes_company_date (company_id, income_date),
+    KEY idx_incomes_category (income_category_id),
+    KEY idx_incomes_account (account_id),
+    KEY idx_incomes_journal (journal_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE expense_categories (
@@ -227,7 +224,7 @@ CREATE TABLE expense_categories (
     category_name VARCHAR(100) NOT NULL,
     account_id INT UNSIGNED NOT NULL COMMENT 'Expense account',
     UNIQUE KEY uq_expense_categories_company_name (company_id, category_name),
-    
+    KEY idx_expense_categories_account (account_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE expenses (
@@ -242,7 +239,10 @@ CREATE TABLE expenses (
     journal_id INT UNSIGNED NULL,
     created_by INT UNSIGNED NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    
+    KEY idx_expenses_company_date (company_id, expense_date),
+    KEY idx_expenses_category (expense_category_id),
+    KEY idx_expenses_account (account_id),
+    KEY idx_expenses_journal (journal_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE sales (
@@ -260,7 +260,7 @@ CREATE TABLE sales (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_sales_company_invoice (company_id, invoice_number),
     KEY idx_sales_customer_date (customer_id, sale_date),
-    
+    KEY idx_sales_journal (journal_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE sales_items (
@@ -270,7 +270,8 @@ CREATE TABLE sales_items (
     quantity DECIMAL(12,2) NOT NULL,
     unit_price DECIMAL(15,2) NOT NULL,
     total DECIMAL(15,2) NOT NULL,
-    
+    KEY idx_sales_items_sale (sale_id),
+    KEY idx_sales_items_product (product_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE purchases (
@@ -288,7 +289,7 @@ CREATE TABLE purchases (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_purchases_company_invoice (company_id, invoice_number),
     KEY idx_purchases_supplier_date (supplier_id, purchase_date),
-    
+    KEY idx_purchases_journal (journal_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE purchase_items (
@@ -298,7 +299,8 @@ CREATE TABLE purchase_items (
     quantity DECIMAL(12,2) NOT NULL,
     unit_cost DECIMAL(15,2) NOT NULL,
     total DECIMAL(15,2) NOT NULL,
-    
+    KEY idx_purchase_items_purchase (purchase_id),
+    KEY idx_purchase_items_product (product_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE payments (
@@ -317,7 +319,10 @@ CREATE TABLE payments (
     created_by INT UNSIGNED NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_payments_company_date (company_id, payment_date),
-    
+    KEY idx_payments_customer (customer_id),
+    KEY idx_payments_supplier (supplier_id),
+    KEY idx_payments_account (account_id),
+    KEY idx_payments_journal (journal_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE payment_allocations (
@@ -326,8 +331,8 @@ CREATE TABLE payment_allocations (
     invoice_type ENUM('SALE','PURCHASE') NOT NULL,
     invoice_id INT UNSIGNED NOT NULL COMMENT 'Polymorphic invoice ID; validate type and company in application',
     allocated_amount DECIMAL(15,2) NOT NULL,
-    KEY idx_payment_allocations_invoice (invoice_type, invoice_id),
-    
+    KEY idx_payment_allocations_payment (payment_id),
+    KEY idx_payment_allocations_invoice (invoice_type, invoice_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE stock_movements (
@@ -340,9 +345,9 @@ CREATE TABLE stock_movements (
     reference_id INT UNSIGNED NULL COMMENT 'Source record; validate in application',
     movement_date DATE NOT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    KEY idx_stock_company (company_id),
     KEY idx_stock_product_date (product_id, movement_date),
-    KEY idx_stock_reference (reference_type, reference_id),
-   
+    KEY idx_stock_reference (reference_type, reference_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE payroll (
@@ -357,7 +362,8 @@ CREATE TABLE payroll (
     payment_status ENUM('PENDING','PAID') NOT NULL DEFAULT 'PENDING',
     journal_id INT UNSIGNED NULL,
     UNIQUE KEY uq_payroll_employee_month (employee_id, salary_month),
-   
+    KEY idx_payroll_company (company_id),
+    KEY idx_payroll_journal (journal_id)
 ) ENGINE=InnoDB;
 
 CREATE TABLE audit_logs (
@@ -370,17 +376,15 @@ CREATE TABLE audit_logs (
     description TEXT NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_audit_company_created (company_id, created_at),
-    KEY idx_audit_user (user_id),
-    
+    KEY idx_audit_user (user_id)
 ) ENGINE=InnoDB;
 
--- IMPORTANT APPLICATION-LEVEL VALIDATIONS:
--- 1. Enforce company ownership across related rows (e.g. sale/customer/product,
---    account/category, journal line/account, employee/payroll).
--- 2. payment_allocations.invoice_type + invoice_id is polymorphic and cannot
---    use a normal single-column FK to both sales and purchases.
--- 3. journal_entries.source_type + source_id and stock movement references
---    are polymorphic; validate them in PHP.
--- 4. Before changing a journal to POSTED, require >= 2 lines and SUM(debit)=SUM(credit).
--- 5. Save source records and journal posting in one SQL transaction.
--- 6. Only POSTED journals should feed ledgers and financial reports.
+-- IMPORTANT APPLICATION-LEVEL VALIDATIONS (no FOREIGN KEY constraints exist):
+-- 1. Enforce all relationships and company ownership in PHP (e.g. sale/customer/product,
+--    account/category, journal line/account, employee/payroll, user/role).
+-- 2. Before deleting a parent row (company, customer, account, etc.), check for child rows.
+-- 3. payment_allocations.invoice_type + invoice_id is polymorphic; validate type and company.
+-- 4. journal_entries.source_type + source_id and stock movement references are polymorphic.
+-- 5. Before changing a journal to POSTED, require >= 2 lines and SUM(debit)=SUM(credit).
+-- 6. Save source records and journal posting in one SQL transaction.
+-- 7. Only POSTED journals should feed ledgers and financial reports.
