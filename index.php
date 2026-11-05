@@ -97,8 +97,16 @@ if (isset($_POST['submit'])) {
                 <label class="form-check-label small text-secondary" for="remember">Remember me</label>
               </div>
             </div>
+            
+          
 
             <button class="btn btn-primary btn-signin w-100" type="submit" name="submit">Sign in <i class="bi bi-arrow-right ms-1"></i></button>
+            <div class="text-center mt-4">
+            <p class="mb-2 text-secondary">New to BizLedger?</p>
+            <a class="btn btn-outline-primary w-100 mb-2" href="admin/signup.php">Sign up</a>
+            <a class="text-link" href="admin/createcompany.php"><i class="bi bi-building me-1"></i>Create a company</a>
+          </div>
+
           </form>
 
           <p class="login-footnote text-center mt-4 mb-0"><i class="bi bi-lock-fill me-1"></i> Your account information stays secure.</p>
