@@ -1,20 +1,5 @@
+<?php include_once ("admin/assets/db/bdconfig.php"); ?>
 
-<?php
-if (isset($_POST['submit'])) {
-
-    $email = $_POST['email'];
-    $password = $_POST['password'];
-
-    if (filter_var($email, FILTER_VALIDATE_EMAIL) && !empty($password)) {
-
-        header("Location: admin/dashboard.php");
-        exit();
-
-    } else {
-        $error = "Please enter a valid email and password.";
-    }
-}
-?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -67,6 +52,41 @@ if (isset($_POST['submit'])) {
         <div class="login-content">
           <h2 class="login-title" id="login-title">Welcome back</h2>
           <p class="login-subtitle">Sign in to your account to continue.</p>
+          <?php
+              if (isset($_POST['submit'])) {
+                extract($_POST);
+                $password = sha1($password);
+
+                
+                //echo "SELECT * FROM users WHERE email = '$email' AND password = '$password'";
+                $result = $conn->query("SELECT * FROM users WHERE email = '$email' AND password = '$password'");
+
+                $row = $result->fetch_assoc();
+
+
+                if ($result->num_rows > 0) {
+                  session_start();
+                  $_SESSION['email'] = $email;
+                  $_SESSION['name'] = $row['name'];
+                  $_SESSION['role'] = $row['role'];
+
+
+                  if ($row['role'] == 'admin') {
+                    $_SESSION['url'] = 'admin/dashboard_admin.php';
+                    header("Location: admin/dashboard_admin.php");
+                  } 
+                    else if ($row['role'] == 'accountent') {
+                    $_SESSION['url'] = 'admin/dashboard_account.php';
+                    header("Location: admin/dashboard_account.php");
+                  } else if ($row['role'] == 'uaser') {
+                    $_SESSION['url'] = 'admin/dashboard_user.php';
+                    header("Location: admin/dashboard_user.php");
+                  }
+                } else {
+                  echo 'problem login';
+                }
+              }
+              ?>
 
           <form method="post">
             <div class="mb-3">

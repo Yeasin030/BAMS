@@ -1,3 +1,5 @@
+<?php 
+    include_once ("assets/db/bdconfig.php"); ?>
 <!doctype html>
 <html lang="en">
 <head>
@@ -150,11 +152,26 @@
     </style>
 </head>
 <body>
+
+
     <main class="form-card">
         <h1>Create company</h1>
         <p class="intro">Enter the company details below. Fields marked with <span class="required">*</span> are required.</p>
+        <?php
+              if (isset($_POST['create'])) {
+                extract($_POST);
+                
 
-        <form method="post" enctype="multipart/form-data">
+                
+                //echo "INSERT INTO companies (company_name, email, phone, address, currency, financial_year_start, status) VALUES ('$company_name', '$email', '$phone', '$address', '$currency', '$financial_year_start', '$status')";
+                $conn->query("INSERT INTO companies (company_name, email, phone, address, currency, financial_year_start, status) VALUES ('$company_name', '$email', '$phone', '$address', '$currency', '$financial_year_start', '$status')");
+               if($conn->affected_rows){
+                     echo "Company created successfully.";
+                 };
+              }
+              ?>
+
+        <form method="post" accept="" enctype="multipart/form-data">
             <div class="fields">
                 <div class="field full">
                     <label for="company_name">Company name <span class="required">*</span></label>
@@ -202,7 +219,7 @@
 
             <div class="actions">
                 <button type="reset">Clear</button>
-                <button type="submit">Create company</button>
+                <button type="submit" name="create">Create company</button>
             </div>
         </form>
     </main>

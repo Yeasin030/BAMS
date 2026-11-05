@@ -87,7 +87,7 @@
                             </div>
                         </div>
                     </div>
-                    <h1 class="section-title mb-3">Welcome to the dashbord</h1>
+                    <h1 class="section-title mb-3">Welcome to the user dashbord</h1>
 
 
                 </section>
