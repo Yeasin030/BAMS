@@ -64,8 +64,7 @@ CREATE TABLE users (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_users_company_email (company_id, email),
-    CONSTRAINT fk_users_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE roles (
@@ -73,8 +72,7 @@ CREATE TABLE roles (
     company_id INT UNSIGNED NOT NULL,
     role_name VARCHAR(80) NOT NULL,
     UNIQUE KEY uq_roles_company_name (company_id, role_name),
-    CONSTRAINT fk_roles_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE user_roles (
@@ -82,10 +80,7 @@ CREATE TABLE user_roles (
     user_id INT UNSIGNED NOT NULL,
     role_id INT UNSIGNED NOT NULL,
     UNIQUE KEY uq_user_role (user_id, role_id),
-    CONSTRAINT fk_user_roles_user FOREIGN KEY (user_id)
-        REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE CASCADE,
-    CONSTRAINT fk_user_roles_role FOREIGN KEY (role_id)
-        REFERENCES roles(role_id) ON UPDATE CASCADE ON DELETE CASCADE
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE customers (
@@ -99,8 +94,7 @@ CREATE TABLE customers (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     KEY idx_customers_company (company_id),
-    CONSTRAINT fk_customers_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE suppliers (
@@ -114,8 +108,7 @@ CREATE TABLE suppliers (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     KEY idx_suppliers_company (company_id),
-    CONSTRAINT fk_suppliers_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE account_categories (
@@ -125,8 +118,7 @@ CREATE TABLE account_categories (
     account_type ENUM('ASSET','LIABILITY','EQUITY','REVENUE','EXPENSE') NOT NULL,
     description TEXT NULL,
     UNIQUE KEY uq_account_category_company_name (company_id, category_name),
-    CONSTRAINT fk_account_categories_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE accounts (
@@ -144,13 +136,7 @@ CREATE TABLE accounts (
     UNIQUE KEY uq_accounts_company_code (company_id, account_code),
     KEY idx_accounts_category (category_id),
     KEY idx_accounts_parent (parent_account_id),
-    CONSTRAINT fk_accounts_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_accounts_category FOREIGN KEY (category_id)
-        REFERENCES account_categories(category_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_accounts_parent FOREIGN KEY (parent_account_id)
-        REFERENCES accounts(account_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT chk_accounts_opening_balance CHECK (opening_balance >= 0)
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE products (
@@ -165,9 +151,7 @@ CREATE TABLE products (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_products_company_code (company_id, product_code),
-    CONSTRAINT fk_products_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT chk_products_prices CHECK (purchase_price >= 0 AND selling_price >= 0)
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE employees (
@@ -181,9 +165,7 @@ CREATE TABLE employees (
     status TINYINT NOT NULL DEFAULT 1,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT fk_employees_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT chk_employees_salary CHECK (basic_salary >= 0)
+   
 ) ENGINE=InnoDB;
 
 CREATE TABLE journal_entries (
@@ -202,10 +184,7 @@ CREATE TABLE journal_entries (
     UNIQUE KEY uq_journal_company_number (company_id, journal_number),
     KEY idx_journal_company_date (company_id, transaction_date),
     KEY idx_journal_source (source_type, source_id),
-    CONSTRAINT fk_journal_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_journal_created_by FOREIGN KEY (created_by)
-        REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE SET NULL
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE journal_lines (
@@ -216,12 +195,7 @@ CREATE TABLE journal_lines (
     debit DECIMAL(15,2) NOT NULL DEFAULT 0.00,
     credit DECIMAL(15,2) NOT NULL DEFAULT 0.00,
     KEY idx_journal_lines_account (account_id),
-    CONSTRAINT fk_journal_lines_entry FOREIGN KEY (journal_id)
-        REFERENCES journal_entries(journal_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_journal_lines_account FOREIGN KEY (account_id)
-        REFERENCES accounts(account_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT chk_journal_line_nonnegative CHECK (debit >= 0 AND credit >= 0),
-    CONSTRAINT chk_journal_line_one_side CHECK (NOT (debit > 0 AND credit > 0))
+   
 ) ENGINE=InnoDB;
 
 CREATE TABLE income_categories (
@@ -230,10 +204,7 @@ CREATE TABLE income_categories (
     category_name VARCHAR(100) NOT NULL,
     account_id INT UNSIGNED NOT NULL COMMENT 'Revenue account',
     UNIQUE KEY uq_income_categories_company_name (company_id, category_name),
-    CONSTRAINT fk_income_categories_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_income_categories_account FOREIGN KEY (account_id)
-        REFERENCES accounts(account_id) ON UPDATE CASCADE ON DELETE RESTRICT
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE incomes (
@@ -247,17 +218,7 @@ CREATE TABLE incomes (
     journal_id INT UNSIGNED NULL,
     created_by INT UNSIGNED NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_incomes_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_incomes_category FOREIGN KEY (income_category_id)
-        REFERENCES income_categories(income_category_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_incomes_account FOREIGN KEY (account_id)
-        REFERENCES accounts(account_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_incomes_journal FOREIGN KEY (journal_id)
-        REFERENCES journal_entries(journal_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_incomes_user FOREIGN KEY (created_by)
-        REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE SET NULL,
-    CONSTRAINT chk_incomes_amount CHECK (amount > 0)
+   
 ) ENGINE=InnoDB;
 
 CREATE TABLE expense_categories (
@@ -266,10 +227,7 @@ CREATE TABLE expense_categories (
     category_name VARCHAR(100) NOT NULL,
     account_id INT UNSIGNED NOT NULL COMMENT 'Expense account',
     UNIQUE KEY uq_expense_categories_company_name (company_id, category_name),
-    CONSTRAINT fk_expense_categories_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_expense_categories_account FOREIGN KEY (account_id)
-        REFERENCES accounts(account_id) ON UPDATE CASCADE ON DELETE RESTRICT
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE expenses (
@@ -284,17 +242,7 @@ CREATE TABLE expenses (
     journal_id INT UNSIGNED NULL,
     created_by INT UNSIGNED NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT fk_expenses_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_expenses_category FOREIGN KEY (expense_category_id)
-        REFERENCES expense_categories(expense_category_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_expenses_account FOREIGN KEY (account_id)
-        REFERENCES accounts(account_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_expenses_journal FOREIGN KEY (journal_id)
-        REFERENCES journal_entries(journal_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_expenses_user FOREIGN KEY (created_by)
-        REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE SET NULL,
-    CONSTRAINT chk_expenses_amount CHECK (amount > 0)
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE sales (
@@ -312,15 +260,7 @@ CREATE TABLE sales (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_sales_company_invoice (company_id, invoice_number),
     KEY idx_sales_customer_date (customer_id, sale_date),
-    CONSTRAINT fk_sales_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_sales_customer FOREIGN KEY (customer_id)
-        REFERENCES customers(customer_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_sales_journal FOREIGN KEY (journal_id)
-        REFERENCES journal_entries(journal_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT chk_sales_amounts CHECK (
-        subtotal >= 0 AND discount >= 0 AND tax_amount >= 0 AND total_amount >= 0
-    )
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE sales_items (
@@ -330,11 +270,7 @@ CREATE TABLE sales_items (
     quantity DECIMAL(12,2) NOT NULL,
     unit_price DECIMAL(15,2) NOT NULL,
     total DECIMAL(15,2) NOT NULL,
-    CONSTRAINT fk_sales_items_sale FOREIGN KEY (sale_id)
-        REFERENCES sales(sale_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_sales_items_product FOREIGN KEY (product_id)
-        REFERENCES products(product_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT chk_sales_items_values CHECK (quantity > 0 AND unit_price >= 0 AND total >= 0)
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE purchases (
@@ -352,15 +288,7 @@ CREATE TABLE purchases (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     UNIQUE KEY uq_purchases_company_invoice (company_id, invoice_number),
     KEY idx_purchases_supplier_date (supplier_id, purchase_date),
-    CONSTRAINT fk_purchases_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_purchases_supplier FOREIGN KEY (supplier_id)
-        REFERENCES suppliers(supplier_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_purchases_journal FOREIGN KEY (journal_id)
-        REFERENCES journal_entries(journal_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT chk_purchases_amounts CHECK (
-        subtotal >= 0 AND discount >= 0 AND tax_amount >= 0 AND total_amount >= 0
-    )
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE purchase_items (
@@ -370,11 +298,7 @@ CREATE TABLE purchase_items (
     quantity DECIMAL(12,2) NOT NULL,
     unit_cost DECIMAL(15,2) NOT NULL,
     total DECIMAL(15,2) NOT NULL,
-    CONSTRAINT fk_purchase_items_purchase FOREIGN KEY (purchase_id)
-        REFERENCES purchases(purchase_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_purchase_items_product FOREIGN KEY (product_id)
-        REFERENCES products(product_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT chk_purchase_items_values CHECK (quantity > 0 AND unit_cost >= 0 AND total >= 0)
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE payments (
@@ -393,24 +317,7 @@ CREATE TABLE payments (
     created_by INT UNSIGNED NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_payments_company_date (company_id, payment_date),
-    CONSTRAINT fk_payments_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_payments_customer FOREIGN KEY (customer_id)
-        REFERENCES customers(customer_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_payments_supplier FOREIGN KEY (supplier_id)
-        REFERENCES suppliers(supplier_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_payments_account FOREIGN KEY (account_id)
-        REFERENCES accounts(account_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_payments_journal FOREIGN KEY (journal_id)
-        REFERENCES journal_entries(journal_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_payments_user FOREIGN KEY (created_by)
-        REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE SET NULL,
-    CONSTRAINT chk_payments_amount CHECK (amount > 0),
-    CONSTRAINT chk_payments_party CHECK (
-        (party_type = 'CUSTOMER' AND customer_id IS NOT NULL AND supplier_id IS NULL)
-        OR (party_type = 'SUPPLIER' AND supplier_id IS NOT NULL AND customer_id IS NULL)
-        OR (party_type = 'OTHER' AND customer_id IS NULL AND supplier_id IS NULL)
-    )
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE payment_allocations (
@@ -420,9 +327,7 @@ CREATE TABLE payment_allocations (
     invoice_id INT UNSIGNED NOT NULL COMMENT 'Polymorphic invoice ID; validate type and company in application',
     allocated_amount DECIMAL(15,2) NOT NULL,
     KEY idx_payment_allocations_invoice (invoice_type, invoice_id),
-    CONSTRAINT fk_payment_allocations_payment FOREIGN KEY (payment_id)
-        REFERENCES payments(payment_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT chk_payment_allocated_amount CHECK (allocated_amount > 0)
+    
 ) ENGINE=InnoDB;
 
 CREATE TABLE stock_movements (
@@ -437,11 +342,7 @@ CREATE TABLE stock_movements (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_stock_product_date (product_id, movement_date),
     KEY idx_stock_reference (reference_type, reference_id),
-    CONSTRAINT fk_stock_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_stock_product FOREIGN KEY (product_id)
-        REFERENCES products(product_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT chk_stock_quantity CHECK (quantity > 0)
+   
 ) ENGINE=InnoDB;
 
 CREATE TABLE payroll (
@@ -456,15 +357,7 @@ CREATE TABLE payroll (
     payment_status ENUM('PENDING','PAID') NOT NULL DEFAULT 'PENDING',
     journal_id INT UNSIGNED NULL,
     UNIQUE KEY uq_payroll_employee_month (employee_id, salary_month),
-    CONSTRAINT fk_payroll_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_payroll_employee FOREIGN KEY (employee_id)
-        REFERENCES employees(employee_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_payroll_journal FOREIGN KEY (journal_id)
-        REFERENCES journal_entries(journal_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT chk_payroll_amounts CHECK (
-        basic_salary >= 0 AND bonus >= 0 AND deductions >= 0 AND net_salary >= 0
-    )
+   
 ) ENGINE=InnoDB;
 
 CREATE TABLE audit_logs (
@@ -478,10 +371,7 @@ CREATE TABLE audit_logs (
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     KEY idx_audit_company_created (company_id, created_at),
     KEY idx_audit_user (user_id),
-    CONSTRAINT fk_audit_company FOREIGN KEY (company_id)
-        REFERENCES companies(company_id) ON UPDATE CASCADE ON DELETE RESTRICT,
-    CONSTRAINT fk_audit_user FOREIGN KEY (user_id)
-        REFERENCES users(user_id) ON UPDATE CASCADE ON DELETE SET NULL
+    
 ) ENGINE=InnoDB;
 
 -- IMPORTANT APPLICATION-LEVEL VALIDATIONS:
