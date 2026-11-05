@@ -16,13 +16,13 @@
 <body>
     <div class="app-shell">
         <!-- Sidebar -->
-        <?php include 'assets/include/sidebar.php'; ?>
+        <?php include 'include/sidebar.php'; ?>
 
         <main class="main">
             
           <!-- Headbar -->
 
-            <?php include 'assets/include/headbar.php'; ?>
+            <?php include 'include/headbar.php'; ?>
 
             <!-- Dashboard Content -->
 
