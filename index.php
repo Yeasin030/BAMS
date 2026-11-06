@@ -56,13 +56,12 @@
               if (isset($_POST['submit'])) {
                 extract($_POST);
                 $password = sha1($password);
-
                 
                 //echo "SELECT * FROM users WHERE email = '$email' AND password = '$password'";
                 $result = $conn->query("SELECT * FROM users WHERE email = '$email' AND password = '$password'");
 
                 $row = $result->fetch_assoc();
-
+                
 
                 if ($result->num_rows > 0) {
                   session_start();
@@ -75,10 +74,10 @@
                     $_SESSION['url'] = 'admin/dashboard_admin.php';
                     header("Location: admin/dashboard_admin.php");
                   } 
-                    else if ($row['role'] == 'accountent') {
+                    else if ($row['role'] == 'accountant') {
                     $_SESSION['url'] = 'admin/dashboard_account.php';
                     header("Location: admin/dashboard_account.php");
-                  } else if ($row['role'] == 'uaser') {
+                  } else if ($row['role'] == 'user') {
                     $_SESSION['url'] = 'admin/dashboard_user.php';
                     header("Location: admin/dashboard_user.php");
                   }

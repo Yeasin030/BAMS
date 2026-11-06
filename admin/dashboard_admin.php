@@ -1,3 +1,14 @@
+<?php
+    session_start();
+    if (!isset($_SESSION['email'])) {
+    header("Location: index.php");
+    }
+
+    if ($_SESSION['role'] != 'admin') {
+    header("Location: /admin/unauthorize.php");
+    }
+?>
+
 <!doctype html>
 <html lang="en">
 
@@ -127,6 +138,7 @@
                     <div class="alert alert-info mt-3 small mb-0"><i class="bi bi-info-circle me-2"></i>UI preview only
                         — records shown here are sample data and are not saved to a database.</div>
                 </section>
+
             </div>
         </main>
     </div>

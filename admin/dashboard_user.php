@@ -1,141 +1,88 @@
-<!doctype html>
+<?php
+    session_start();
+    if (!isset($_SESSION['email'])) {
+    header("Location: index.php");
+    }
+
+    if ($_SESSION['role'] != 'user') {
+    header("Location: admin/unauthorize.php");
+    }
+?>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>BizLedger — Business Account Management</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Manrope:wght@500;600;700;800&display=swap"
-        rel="stylesheet">
-    <link href="assets/css/style.css" rel="stylesheet">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>BizLedger Employee Portal</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link href="assets/css/employeesstyle.css" rel="stylesheet">
 </head>
 
 <body>
-    <div class="app-shell">
-        <!-- Sidebar -->
-        <?php include 'include/sidebar.php'; ?>
+<div class="layout">
+    <!-- Sidebar -->
+    <?php include ("include/employsidebar.php");?>
+    
+    <main class="main">
+        <!-- Header -->
 
-        <main class="main">
-            
-          <!-- Headbar -->
+    <?php include_once ("include/employheadbar.php"); ?>
 
-            <?php include 'include/headbar.php'; ?>
+    <section class="hero">
+      <div><h3>Welcome back, Md. Tanvir Hasan! 👋</h3><p>Stay productive and keep up with your work details.</p></div>
+      <i class="bi bi-laptop hero-art"></i>
+    </section>
 
-            <!-- Dashboard Content -->
-
-            <div class="content">
-                <section class="section active" id="page-dashboard">
-                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-                        <div>
-                            <h1 class="page-title mb-1">Good morning, Yeasin 👋</h1>
-                            <div class="sub-title">Here's what's happening with your business today.</div>
-                        </div>
-                        <div class="d-flex gap-2"><button class="btn btn-light" id="dateRange"><i
-                                    class="bi bi-calendar3 me-2"></i>This month</button><button class="btn btn-primary"
-                                data-bs-toggle="modal" data-bs-target="#transactionModal"><i
-                                    class="bi bi-plus-lg me-1"></i>New transaction</button></div>
-                    </div>
-                    <div class="row g-3 mb-4">
-                        <div class="col-6 col-xl-3">
-                            <div class="card metric-card">
-                                <div class="d-flex justify-content-between">
-                                    <div class="metric-label">TOTAL REVENUE</div>
-                                    <div class="metric-icon bg-primary-subtle text-primary"><i
-                                            class="bi bi-currency-exchange"></i></div>
-                                </div>
-                                <div class="metric-value">৳ 8,45,250</div>
-                                <div class="tiny-change"><i class="bi bi-arrow-up-right"></i> 12.8% <span
-                                        class="text-secondary fw-normal">vs last month</span></div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-xl-3">
-                            <div class="card metric-card">
-                                <div class="d-flex justify-content-between">
-                                    <div class="metric-label">TOTAL EXPENSES</div>
-                                    <div class="metric-icon bg-danger-subtle text-danger"><i class="bi bi-wallet"></i>
-                                    </div>
-                                </div>
-                                <div class="metric-value">৳ 3,12,480</div>
-                                <div class="tiny-change text-danger"><i class="bi bi-arrow-up-right"></i> 4.3% <span
-                                        class="text-secondary fw-normal">vs last month</span></div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-xl-3">
-                            <div class="card metric-card">
-                                <div class="d-flex justify-content-between">
-                                    <div class="metric-label">NET PROFIT</div>
-                                    <div class="metric-icon bg-success-subtle text-success"><i
-                                            class="bi bi-piggy-bank"></i></div>
-                                </div>
-                                <div class="metric-value">৳ 5,32,770</div>
-                                <div class="tiny-change"><i class="bi bi-arrow-up-right"></i> 18.6% <span
-                                        class="text-secondary fw-normal">vs last month</span></div>
-                            </div>
-                        </div>
-                        <div class="col-6 col-xl-3">
-                            <div class="card metric-card">
-                                <div class="d-flex justify-content-between">
-                                    <div class="metric-label">CASH & BANK</div>
-                                    <div class="metric-icon bg-warning-subtle text-warning"><i class="bi bi-bank"></i>
-                                    </div>
-                                </div>
-                                <div class="metric-value">৳ 12,40,600</div>
-                                <div class="metric-label">Across 3 accounts</div>
-                            </div>
-                        </div>
-                    </div>
-                    <h1 class="section-title mb-3">Welcome to the user dashbord</h1>
-
-
-                </section>
-
-                <section class="section" id="page-generic">
-                    <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
-                        <div>
-                            <h1 class="page-title mb-1" id="sectionTitle">Customers</h1>
-                            <div class="sub-title" id="sectionDesc">Manage your business records.</div>
-                        </div><button class="btn btn-primary" id="addRecordBtn"><i class="bi bi-plus-lg me-1"></i><span
-                                id="addRecordLabel">Add new</span></button>
-                    </div>
-                    <div class="card">
-                        <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-                            <div class="fw-bold" id="tableHeading">All records <span class="text-secondary fw-normal"
-                                    id="recordCount"></span></div>
-                            <div class="d-flex gap-2">
-                                <div class="search-box"><i class="bi bi-search"></i><input
-                                        class="form-control form-control-sm" id="tableSearch"
-                                        placeholder="Search records..."></div><button class="btn btn-light btn-sm"><i
-                                        class="bi bi-funnel me-1"></i>Filter</button>
-                            </div>
-                        </div>
-                        <div class="table-responsive">
-                            <table class="table">
-                                <thead id="genericHead"></thead>
-                                <tbody id="genericBody"></tbody>
-                            </table>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center p-3 border-top"><span
-                                class="text-secondary small" id="tableFoot">Showing sample records</span>
-                            <div class="btn-group btn-group-sm"><button class="btn btn-light"
-                                    disabled>Previous</button><button class="btn btn-primary">1</button><button
-                                    class="btn btn-light" disabled>Next</button></div>
-                        </div>
-                    </div>
-                    <div class="alert alert-info mt-3 small mb-0"><i class="bi bi-info-circle me-2"></i>UI preview only
-                        — records shown here are sample data and are not saved to a database.</div>
-                </section>
+    <div class="row g-3 mb-3">
+      <div class="col-xl-8">
+        <div class="cardx h-100">
+          <h6 class="ctitle"><i class="bi bi-people-fill text-primary"></i>Employee Profile</h6><hr class="mt-3 mb-0">
+          <div class="row g-0">
+            <div class="col-md-8 d-flex gap-4 pt-3 pe-3">
+              <div class="photo"><div class="ph">TH</div><button class="edit" id="editBtn" title="Edit photo"><i class="bi bi-pencil"></i></button></div>
+              <div class="flex-grow-1 min-w-0">
+                <div class="d-flex align-items-center gap-2 mb-3"><h5 class="m-0 fw-bold">Md. Tanvir Hasan</h5><span class="tag">Employee</span></div>
+                <dl class="info" id="info"></dl>
+              </div>
             </div>
-        </main>
+            <div class="col-md-4 qi">
+              <h6 class="fw-bold mb-3">Quick Info</h6>
+              <div id="quick"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-xl-4">
+        <div class="cardx h-100">
+          <h6 class="ctitle"><i class="bi bi-lightning-charge"></i>Quick Actions</h6><hr class="mt-3">
+          <div class="row g-3" id="actions"></div>
+        </div>
+      </div>
     </div>
 
-   
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
-
+    <div class="row g-3">
+      <div class="col-xl-8">
+        <div class="cardx h-100">
+          <div class="d-flex justify-content-between"><h6 class="ctitle"><i class="bi bi-clock-history"></i>Recent Activity</h6><a href="#" class="viewall">View All <i class="bi bi-arrow-right"></i></a></div>
+          <hr class="mt-3">
+          <ul class="timeline" id="activity"></ul>
+        </div>
+      </div>
+      <div class="col-xl-4">
+        <div class="cardx h-100">
+          <div class="d-flex justify-content-between"><h6 class="ctitle"><i class="bi bi-megaphone-fill"></i>Company Notices</h6><a href="#" class="viewall">View All <i class="bi bi-arrow-right"></i></a></div>
+          <hr class="mt-3">
+          <ul class="notices" id="notices"></ul>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="assets/js/employeesscript.js"></script>
 </body>
 
 </html>
