@@ -77,9 +77,9 @@
                     else if ($row['role'] == 'accountant') {
                     $_SESSION['url'] = 'admin/dashboard_account.php';
                     header("Location: admin/dashboard_account.php");
-                  } else if ($row['role'] == 'user') {
-                    $_SESSION['url'] = 'admin/dashboard_user.php';
-                    header("Location: admin/dashboard_user.php");
+                  } else if ($row['role'] == 'employees') {
+                    $_SESSION['url'] = 'admin/dashboard_employees.php';
+                    header("Location: admin/dashboard_employees.php");
                   }
                 } else {
                   echo 'problem login';

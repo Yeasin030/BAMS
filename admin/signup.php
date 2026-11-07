@@ -81,7 +81,7 @@
                             <label class="form-label" for="role">Role</label>
                             <select class="form-select" id="role" name="role" required>
                                 <option value="" selected disabled>Choose a role</option>
-                                <option value="user">User</option>
+                                <option value="employees">employees</option>
                                 <option value="accountant">Accountant</option>
                                 <option value="admin">Admin</option>
                             </select>

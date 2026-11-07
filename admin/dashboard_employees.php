@@ -4,8 +4,8 @@
     header("Location: index.php");
     }
 
-    if ($_SESSION['role'] != 'user') {
-    header("Location: admin/unauthorize.php");
+    if ($_SESSION['role'] != 'employees') {
+    header("Location: /admin/unauthorize.php");
     }
 ?>
 <!DOCTYPE html>
