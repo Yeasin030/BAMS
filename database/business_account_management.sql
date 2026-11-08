@@ -1,11 +1,11 @@
 -- phpMyAdmin SQL Dump
--- version 5.2.1
+-- version 5.2.3
 -- https://www.phpmyadmin.net/
 --
--- Host: 127.0.0.1
--- Generation Time: Nov 07, 2026 at 04:49 PM
--- Server version: 10.4.32-MariaDB
--- PHP Version: 8.2.12
+-- Host: localhost:3306
+-- Generation Time: Nov 08, 2026 at 02:08 PM
+-- Server version: 8.4.3
+-- PHP Version: 8.3.33
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -28,17 +28,17 @@ SET time_zone = "+00:00";
 --
 
 CREATE TABLE `accounts` (
-  `account_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `category_id` int(10) UNSIGNED NOT NULL,
-  `parent_account_id` int(10) UNSIGNED DEFAULT NULL,
-  `account_code` varchar(30) NOT NULL,
-  `account_name` varchar(120) NOT NULL,
-  `opening_balance` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `opening_balance_side` enum('DEBIT','CREDIT') NOT NULL DEFAULT 'DEBIT',
-  `is_active` tinyint(4) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `account_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `category_id` int UNSIGNED NOT NULL,
+  `parent_account_id` int UNSIGNED DEFAULT NULL,
+  `account_code` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `account_name` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `opening_balance` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `opening_balance_side` enum('DEBIT','CREDIT') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DEBIT',
+  `is_active` tinyint NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -48,11 +48,11 @@ CREATE TABLE `accounts` (
 --
 
 CREATE TABLE `account_categories` (
-  `category_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `category_name` varchar(100) NOT NULL,
-  `account_type` enum('ASSET','LIABILITY','EQUITY','REVENUE','EXPENSE') NOT NULL,
-  `description` text DEFAULT NULL
+  `category_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `category_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `account_type` enum('ASSET','LIABILITY','EQUITY','REVENUE','EXPENSE') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -62,14 +62,14 @@ CREATE TABLE `account_categories` (
 --
 
 CREATE TABLE `audit_logs` (
-  `log_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `user_id` int(10) UNSIGNED DEFAULT NULL,
-  `action` varchar(100) NOT NULL,
-  `table_name` varchar(100) NOT NULL,
-  `record_id` int(10) UNSIGNED DEFAULT NULL,
-  `description` text DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `log_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED DEFAULT NULL,
+  `action` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `table_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `record_id` int UNSIGNED DEFAULT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -79,17 +79,17 @@ CREATE TABLE `audit_logs` (
 --
 
 CREATE TABLE `companies` (
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `company_name` varchar(150) NOT NULL,
-  `email` varchar(150) DEFAULT NULL,
-  `phone` varchar(30) DEFAULT NULL,
-  `address` text DEFAULT NULL,
-  `logo` varchar(255) DEFAULT NULL,
-  `currency` varchar(10) NOT NULL DEFAULT 'BDT',
+  `company_id` int UNSIGNED NOT NULL,
+  `company_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` text COLLATE utf8mb4_unicode_ci,
+  `logo` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `currency` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'BDT',
   `financial_year_start` date DEFAULT NULL,
-  `status` tinyint(4) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `status` tinyint NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -109,15 +109,15 @@ INSERT INTO `companies` (`company_id`, `company_name`, `email`, `phone`, `addres
 --
 
 CREATE TABLE `customers` (
-  `customer_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `customer_name` varchar(150) NOT NULL,
-  `phone` varchar(30) DEFAULT NULL,
-  `email` varchar(150) DEFAULT NULL,
-  `address` text DEFAULT NULL,
-  `status` tinyint(4) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `customer_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `customer_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` text COLLATE utf8mb4_unicode_ci,
+  `status` tinyint NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -127,17 +127,28 @@ CREATE TABLE `customers` (
 --
 
 CREATE TABLE `employees` (
-  `employee_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `employee_name` varchar(150) NOT NULL,
-  `phone` varchar(30) DEFAULT NULL,
-  `designation` varchar(100) DEFAULT NULL,
+  `employee_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED DEFAULT NULL,
+  `employee_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `phone` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `designation` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `joining_date` date DEFAULT NULL,
-  `basic_salary` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `status` tinyint(4) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `basic_salary` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `status` tinyint NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `employees`
+--
+
+INSERT INTO `employees` (`employee_id`, `company_id`, `user_id`, `employee_name`, `email`, `phone`, `designation`, `joining_date`, `basic_salary`, `status`, `created_at`, `updated_at`) VALUES
+(1, 1, 9, 'Yeasin Arafat', 'yeasinarafat5331@gmail.com', '01755329910', 'hr', '2026-11-08', 20000.00, 1, '2026-11-08 05:46:17', '2026-11-08 08:00:27'),
+(2, 1, 10, 'Rokon', 'rokon@gmail.com', '123456978', 'hr', '2026-11-01', 52200.00, 1, '2026-11-08 06:22:16', '2026-11-08 08:00:27'),
+(3, 1, 11, 'Mahir', 'mahir@gmail.com', '11452989', 'As.hr', '2026-11-02', 52465.00, 1, '2026-11-08 06:34:46', '2026-11-08 08:00:27');
 
 -- --------------------------------------------------------
 
@@ -146,17 +157,17 @@ CREATE TABLE `employees` (
 --
 
 CREATE TABLE `expenses` (
-  `expense_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `expense_category_id` int(10) UNSIGNED NOT NULL,
-  `account_id` int(10) UNSIGNED NOT NULL COMMENT 'Cash/bank account',
+  `expense_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `expense_category_id` int UNSIGNED NOT NULL,
+  `account_id` int UNSIGNED NOT NULL COMMENT 'Cash/bank account',
   `amount` decimal(15,2) NOT NULL,
   `expense_date` date NOT NULL,
-  `description` text DEFAULT NULL,
-  `receipt_file` varchar(255) DEFAULT NULL,
-  `journal_id` int(10) UNSIGNED DEFAULT NULL,
-  `created_by` int(10) UNSIGNED DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `receipt_file` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `journal_id` int UNSIGNED DEFAULT NULL,
+  `created_by` int UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -166,10 +177,10 @@ CREATE TABLE `expenses` (
 --
 
 CREATE TABLE `expense_categories` (
-  `expense_category_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `category_name` varchar(100) NOT NULL,
-  `account_id` int(10) UNSIGNED NOT NULL COMMENT 'Expense account'
+  `expense_category_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `category_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `account_id` int UNSIGNED NOT NULL COMMENT 'Expense account'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -179,16 +190,16 @@ CREATE TABLE `expense_categories` (
 --
 
 CREATE TABLE `incomes` (
-  `income_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `income_category_id` int(10) UNSIGNED NOT NULL,
-  `account_id` int(10) UNSIGNED NOT NULL COMMENT 'Cash/bank account',
+  `income_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `income_category_id` int UNSIGNED NOT NULL,
+  `account_id` int UNSIGNED NOT NULL COMMENT 'Cash/bank account',
   `amount` decimal(15,2) NOT NULL,
   `income_date` date NOT NULL,
-  `description` text DEFAULT NULL,
-  `journal_id` int(10) UNSIGNED DEFAULT NULL,
-  `created_by` int(10) UNSIGNED DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `journal_id` int UNSIGNED DEFAULT NULL,
+  `created_by` int UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -198,10 +209,10 @@ CREATE TABLE `incomes` (
 --
 
 CREATE TABLE `income_categories` (
-  `income_category_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `category_name` varchar(100) NOT NULL,
-  `account_id` int(10) UNSIGNED NOT NULL COMMENT 'Revenue account'
+  `income_category_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `category_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `account_id` int UNSIGNED NOT NULL COMMENT 'Revenue account'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -211,18 +222,18 @@ CREATE TABLE `income_categories` (
 --
 
 CREATE TABLE `journal_entries` (
-  `journal_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `journal_number` varchar(50) NOT NULL,
+  `journal_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `journal_number` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `transaction_date` date NOT NULL,
-  `reference_number` varchar(100) DEFAULT NULL,
-  `description` text DEFAULT NULL,
-  `source_type` varchar(50) DEFAULT NULL COMMENT 'Example: SALE, EXPENSE, PAYMENT',
-  `source_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'Polymorphic source; validate in application',
-  `status` enum('DRAFT','POSTED','REVERSED') NOT NULL DEFAULT 'DRAFT',
-  `created_by` int(10) UNSIGNED DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `reference_number` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `source_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Example: SALE, EXPENSE, PAYMENT',
+  `source_id` int UNSIGNED DEFAULT NULL COMMENT 'Polymorphic source; validate in application',
+  `status` enum('DRAFT','POSTED','REVERSED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT',
+  `created_by` int UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -232,12 +243,12 @@ CREATE TABLE `journal_entries` (
 --
 
 CREATE TABLE `journal_lines` (
-  `line_id` int(10) UNSIGNED NOT NULL,
-  `journal_id` int(10) UNSIGNED NOT NULL,
-  `account_id` int(10) UNSIGNED NOT NULL,
-  `description` text DEFAULT NULL,
-  `debit` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `credit` decimal(15,2) NOT NULL DEFAULT 0.00
+  `line_id` int UNSIGNED NOT NULL,
+  `journal_id` int UNSIGNED NOT NULL,
+  `account_id` int UNSIGNED NOT NULL,
+  `description` text COLLATE utf8mb4_unicode_ci,
+  `debit` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `credit` decimal(15,2) NOT NULL DEFAULT '0.00'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -247,20 +258,20 @@ CREATE TABLE `journal_lines` (
 --
 
 CREATE TABLE `payments` (
-  `payment_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `party_type` enum('CUSTOMER','SUPPLIER','OTHER') NOT NULL,
-  `customer_id` int(10) UNSIGNED DEFAULT NULL,
-  `supplier_id` int(10) UNSIGNED DEFAULT NULL,
-  `account_id` int(10) UNSIGNED NOT NULL COMMENT 'Cash/bank account',
-  `payment_type` enum('RECEIPT','PAYMENT') NOT NULL,
+  `payment_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `party_type` enum('CUSTOMER','SUPPLIER','OTHER') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `customer_id` int UNSIGNED DEFAULT NULL,
+  `supplier_id` int UNSIGNED DEFAULT NULL,
+  `account_id` int UNSIGNED NOT NULL COMMENT 'Cash/bank account',
+  `payment_type` enum('RECEIPT','PAYMENT') COLLATE utf8mb4_unicode_ci NOT NULL,
   `amount` decimal(15,2) NOT NULL,
   `payment_date` date NOT NULL,
-  `payment_method` varchar(50) NOT NULL,
-  `reference_number` varchar(100) DEFAULT NULL,
-  `journal_id` int(10) UNSIGNED DEFAULT NULL,
-  `created_by` int(10) UNSIGNED DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `payment_method` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `reference_number` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `journal_id` int UNSIGNED DEFAULT NULL,
+  `created_by` int UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -270,10 +281,10 @@ CREATE TABLE `payments` (
 --
 
 CREATE TABLE `payment_allocations` (
-  `allocation_id` int(10) UNSIGNED NOT NULL,
-  `payment_id` int(10) UNSIGNED NOT NULL,
-  `invoice_type` enum('SALE','PURCHASE') NOT NULL,
-  `invoice_id` int(10) UNSIGNED NOT NULL COMMENT 'Polymorphic invoice ID; validate type and company in application',
+  `allocation_id` int UNSIGNED NOT NULL,
+  `payment_id` int UNSIGNED NOT NULL,
+  `invoice_type` enum('SALE','PURCHASE') COLLATE utf8mb4_unicode_ci NOT NULL,
+  `invoice_id` int UNSIGNED NOT NULL COMMENT 'Polymorphic invoice ID; validate type and company in application',
   `allocated_amount` decimal(15,2) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -284,16 +295,16 @@ CREATE TABLE `payment_allocations` (
 --
 
 CREATE TABLE `payroll` (
-  `payroll_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `employee_id` int(10) UNSIGNED NOT NULL,
+  `payroll_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `employee_id` int UNSIGNED NOT NULL,
   `salary_month` date NOT NULL COMMENT 'Use the first day of the salary month',
   `basic_salary` decimal(15,2) NOT NULL,
-  `bonus` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `deductions` decimal(15,2) NOT NULL DEFAULT 0.00,
+  `bonus` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `deductions` decimal(15,2) NOT NULL DEFAULT '0.00',
   `net_salary` decimal(15,2) NOT NULL,
-  `payment_status` enum('PENDING','PAID') NOT NULL DEFAULT 'PENDING',
-  `journal_id` int(10) UNSIGNED DEFAULT NULL
+  `payment_status` enum('PENDING','PAID') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'PENDING',
+  `journal_id` int UNSIGNED DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -303,16 +314,16 @@ CREATE TABLE `payroll` (
 --
 
 CREATE TABLE `products` (
-  `product_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `product_name` varchar(150) NOT NULL,
-  `product_code` varchar(50) NOT NULL,
-  `purchase_price` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `selling_price` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `current_stock` decimal(12,2) NOT NULL DEFAULT 0.00,
-  `status` tinyint(4) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `product_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `product_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `product_code` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `purchase_price` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `selling_price` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `current_stock` decimal(12,2) NOT NULL DEFAULT '0.00',
+  `status` tinyint NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -322,18 +333,18 @@ CREATE TABLE `products` (
 --
 
 CREATE TABLE `purchases` (
-  `purchase_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `supplier_id` int(10) UNSIGNED NOT NULL,
-  `invoice_number` varchar(50) NOT NULL,
+  `purchase_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `supplier_id` int UNSIGNED NOT NULL,
+  `invoice_number` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `purchase_date` date NOT NULL,
-  `subtotal` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `discount` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `tax_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `total_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `status` enum('DRAFT','POSTED','PARTIAL','PAID','CANCELLED') NOT NULL DEFAULT 'DRAFT',
-  `journal_id` int(10) UNSIGNED DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `subtotal` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `discount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `tax_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `total_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `status` enum('DRAFT','POSTED','PARTIAL','PAID','CANCELLED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT',
+  `journal_id` int UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -343,9 +354,9 @@ CREATE TABLE `purchases` (
 --
 
 CREATE TABLE `purchase_items` (
-  `purchase_item_id` int(10) UNSIGNED NOT NULL,
-  `purchase_id` int(10) UNSIGNED NOT NULL,
-  `product_id` int(10) UNSIGNED NOT NULL,
+  `purchase_item_id` int UNSIGNED NOT NULL,
+  `purchase_id` int UNSIGNED NOT NULL,
+  `product_id` int UNSIGNED NOT NULL,
   `quantity` decimal(12,2) NOT NULL,
   `unit_cost` decimal(15,2) NOT NULL,
   `total` decimal(15,2) NOT NULL
@@ -358,9 +369,9 @@ CREATE TABLE `purchase_items` (
 --
 
 CREATE TABLE `roles` (
-  `role_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `role_name` varchar(80) NOT NULL
+  `role_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `role_name` varchar(80) COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -370,18 +381,18 @@ CREATE TABLE `roles` (
 --
 
 CREATE TABLE `sales` (
-  `sale_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `customer_id` int(10) UNSIGNED NOT NULL,
-  `invoice_number` varchar(50) NOT NULL,
+  `sale_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `customer_id` int UNSIGNED NOT NULL,
+  `invoice_number` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL,
   `sale_date` date NOT NULL,
-  `subtotal` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `discount` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `tax_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `total_amount` decimal(15,2) NOT NULL DEFAULT 0.00,
-  `status` enum('DRAFT','POSTED','PARTIAL','PAID','CANCELLED') NOT NULL DEFAULT 'DRAFT',
-  `journal_id` int(10) UNSIGNED DEFAULT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `subtotal` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `discount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `tax_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `total_amount` decimal(15,2) NOT NULL DEFAULT '0.00',
+  `status` enum('DRAFT','POSTED','PARTIAL','PAID','CANCELLED') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DRAFT',
+  `journal_id` int UNSIGNED DEFAULT NULL,
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -391,9 +402,9 @@ CREATE TABLE `sales` (
 --
 
 CREATE TABLE `sales_items` (
-  `sales_item_id` int(10) UNSIGNED NOT NULL,
-  `sale_id` int(10) UNSIGNED NOT NULL,
-  `product_id` int(10) UNSIGNED NOT NULL,
+  `sales_item_id` int UNSIGNED NOT NULL,
+  `sale_id` int UNSIGNED NOT NULL,
+  `product_id` int UNSIGNED NOT NULL,
   `quantity` decimal(12,2) NOT NULL,
   `unit_price` decimal(15,2) NOT NULL,
   `total` decimal(15,2) NOT NULL
@@ -406,15 +417,15 @@ CREATE TABLE `sales_items` (
 --
 
 CREATE TABLE `stock_movements` (
-  `movement_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `product_id` int(10) UNSIGNED NOT NULL,
-  `movement_type` enum('IN','OUT','ADJUSTMENT') NOT NULL,
+  `movement_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `product_id` int UNSIGNED NOT NULL,
+  `movement_type` enum('IN','OUT','ADJUSTMENT') COLLATE utf8mb4_unicode_ci NOT NULL,
   `quantity` decimal(12,2) NOT NULL,
-  `reference_type` varchar(50) DEFAULT NULL,
-  `reference_id` int(10) UNSIGNED DEFAULT NULL COMMENT 'Source record; validate in application',
+  `reference_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `reference_id` int UNSIGNED DEFAULT NULL COMMENT 'Source record; validate in application',
   `movement_date` date NOT NULL,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp()
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -424,15 +435,15 @@ CREATE TABLE `stock_movements` (
 --
 
 CREATE TABLE `suppliers` (
-  `supplier_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL,
-  `supplier_name` varchar(150) NOT NULL,
-  `phone` varchar(30) DEFAULT NULL,
-  `email` varchar(150) DEFAULT NULL,
-  `address` text DEFAULT NULL,
-  `status` tinyint(4) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp()
+  `supplier_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL,
+  `supplier_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `phone` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `address` text COLLATE utf8mb4_unicode_ci,
+  `status` tinyint NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- --------------------------------------------------------
@@ -442,15 +453,15 @@ CREATE TABLE `suppliers` (
 --
 
 CREATE TABLE `users` (
-  `user_id` int(10) UNSIGNED NOT NULL,
-  `company_id` int(10) UNSIGNED NOT NULL DEFAULT 1,
-  `name` varchar(120) NOT NULL,
-  `email` varchar(150) NOT NULL,
-  `password` varchar(255) NOT NULL COMMENT 'sha1',
-  `status` tinyint(4) NOT NULL DEFAULT 1,
-  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
-  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
-  `role` enum('admin','accountant','employees') NOT NULL
+  `user_id` int UNSIGNED NOT NULL,
+  `company_id` int UNSIGNED NOT NULL DEFAULT '1',
+  `name` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `password` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'sha1',
+  `status` tinyint NOT NULL DEFAULT '1',
+  `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `role` enum('admin','accountant','employees') COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -460,7 +471,11 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`user_id`, `company_id`, `name`, `email`, `password`, `status`, `created_at`, `updated_at`, `role`) VALUES
 (4, 1, 'admin', 'admin@gmail.com', 'd033e22ae348aeb5660fc2140aec35850c4da997', 1, '2026-11-06 16:19:13', '2026-11-06 16:19:13', 'admin'),
 (5, 1, 'user', 'user', '12dea96fec20593566ab75692c9949596833adc9', 1, '2026-11-06 16:21:26', '2026-11-07 15:32:26', 'employees'),
-(7, 1, 'accountant', 'accountant', '4cd5edcd9aa8e3aed333a5dccda30a3b4a7eeeb7', 1, '2026-11-06 17:15:55', '2026-11-06 17:15:55', 'accountant');
+(7, 1, 'accountant', 'accountant', '4cd5edcd9aa8e3aed333a5dccda30a3b4a7eeeb7', 1, '2026-11-06 17:15:55', '2026-11-06 17:15:55', 'accountant'),
+(8, 1, 'accountent', 'accountent@gmail.com', '02f7eb57679e95c8d3514c984ccb7fe92f3495fc', 1, '2026-11-08 02:51:22', '2026-11-08 02:51:22', 'accountant'),
+(9, 1, 'Yeasin Arafat', 'yeasinarafat5331@gmail.com', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', 1, '2026-11-08 05:46:17', '2026-11-08 05:48:27', 'employees'),
+(10, 1, 'Rokon', 'rokon@gmail.com', '892e0efdb2bd3d90d4a3ab598e8dd4b8baa74025', 1, '2026-11-08 06:22:16', '2026-11-08 06:22:16', 'employees'),
+(11, 1, 'Mahir', 'mahir@gmail.com', 'ffdba47d0f0bfe4b6a9bf8d07e930dd980a9015d', 1, '2026-11-08 06:34:46', '2026-11-08 06:34:46', 'accountant');
 
 -- --------------------------------------------------------
 
@@ -469,9 +484,9 @@ INSERT INTO `users` (`user_id`, `company_id`, `name`, `email`, `password`, `stat
 --
 
 CREATE TABLE `user_roles` (
-  `user_role_id` int(10) UNSIGNED NOT NULL,
-  `user_id` int(10) UNSIGNED NOT NULL,
-  `role_id` int(10) UNSIGNED NOT NULL
+  `user_role_id` int UNSIGNED NOT NULL,
+  `user_id` int UNSIGNED NOT NULL,
+  `role_id` int UNSIGNED NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
@@ -520,6 +535,8 @@ ALTER TABLE `customers`
 --
 ALTER TABLE `employees`
   ADD PRIMARY KEY (`employee_id`),
+  ADD UNIQUE KEY `uq_employees_user` (`user_id`),
+  ADD UNIQUE KEY `uq_employees_email` (`email`),
   ADD KEY `idx_employees_company` (`company_id`);
 
 --
@@ -673,7 +690,8 @@ ALTER TABLE `suppliers`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`user_id`),
-  ADD UNIQUE KEY `uq_users_company_email` (`company_id`,`email`);
+  ADD UNIQUE KEY `uq_users_company_email` (`company_id`,`email`),
+  ADD UNIQUE KEY `uq_users_email` (`email`);
 
 --
 -- Indexes for table `user_roles`
@@ -691,151 +709,161 @@ ALTER TABLE `user_roles`
 -- AUTO_INCREMENT for table `accounts`
 --
 ALTER TABLE `accounts`
-  MODIFY `account_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `account_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `account_categories`
 --
 ALTER TABLE `account_categories`
-  MODIFY `category_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `category_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `audit_logs`
 --
 ALTER TABLE `audit_logs`
-  MODIFY `log_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `log_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `companies`
 --
 ALTER TABLE `companies`
-  MODIFY `company_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `company_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `customers`
 --
 ALTER TABLE `customers`
-  MODIFY `customer_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `customer_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `employee_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `employee_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `expense_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `expense_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `expense_categories`
 --
 ALTER TABLE `expense_categories`
-  MODIFY `expense_category_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `expense_category_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `incomes`
 --
 ALTER TABLE `incomes`
-  MODIFY `income_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `income_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `income_categories`
 --
 ALTER TABLE `income_categories`
-  MODIFY `income_category_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `income_category_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `journal_entries`
 --
 ALTER TABLE `journal_entries`
-  MODIFY `journal_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `journal_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `journal_lines`
 --
 ALTER TABLE `journal_lines`
-  MODIFY `line_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `line_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `payments`
 --
 ALTER TABLE `payments`
-  MODIFY `payment_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `payment_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `payment_allocations`
 --
 ALTER TABLE `payment_allocations`
-  MODIFY `allocation_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `allocation_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `payroll`
 --
 ALTER TABLE `payroll`
-  MODIFY `payroll_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `payroll_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `product_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `product_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `purchases`
 --
 ALTER TABLE `purchases`
-  MODIFY `purchase_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `purchase_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `purchase_items`
 --
 ALTER TABLE `purchase_items`
-  MODIFY `purchase_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `purchase_item_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `roles`
 --
 ALTER TABLE `roles`
-  MODIFY `role_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `role_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `sales`
 --
 ALTER TABLE `sales`
-  MODIFY `sale_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `sale_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `sales_items`
 --
 ALTER TABLE `sales_items`
-  MODIFY `sales_item_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `sales_item_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `stock_movements`
 --
 ALTER TABLE `stock_movements`
-  MODIFY `movement_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `movement_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `suppliers`
 --
 ALTER TABLE `suppliers`
-  MODIFY `supplier_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `supplier_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `user_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `user_roles`
 --
 ALTER TABLE `user_roles`
-  MODIFY `user_role_id` int(10) UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `user_role_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
+-- Constraints for dumped tables
+--
+
+--
+-- Constraints for table `employees`
+--
+ALTER TABLE `employees`
+  ADD CONSTRAINT `fk_employees_user` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

@@ -23,7 +23,10 @@
 <body class="bg-body-tertiary">
 <div class="container-fluid px-0">
 <div class="row min-vh-100">
-  <div class="col-lg-3 col-xl-2 p-0 bg-dark"><?php include 'include/adminsidebar.php'; ?></div>
+  <div class="col-lg-3 col-xl-2 p-0 bg-dark">
+    
+  <?php include 'include/adminsidebar.php'; ?>
+</div>
   <main class="col-12 col-lg-9 col-xl-10 p-0">
 
     <?php include 'include/adminheadbar.php'; ?>
