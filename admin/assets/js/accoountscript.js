@@ -37,10 +37,11 @@ const kpis = [
     }
 ];
 
-document.getElementById('kpis').innerHTML = kpis.map((k, n) => `<div class="col-md-6 col-xl-3"><div class="cardx kpi">
- <div class="ic" style="background:${k.bg};color:${k.col}"><i class="bi ${k.i}"></i></div>
- <div><div class="lbl">${k.l}</div><div class="val">${k.v}</div><div class="chg"><i class="bi bi-arrow-up-right"></i> ${k.c} <span>vs last month</span></div></div>
- <canvas id="spark${n}"></canvas></div></div>`).join('');
+document.getElementById('kpis').innerHTML = kpis.map((k, n) => `<div class="col-md-6 col-xl-3"><div class="card h-100 border-0 rounded-4 shadow-sm"><div class="card-body p-4">
+ <div class="d-flex align-items-center gap-3">
+ <div class="rounded-3 p-3 bg-primary-subtle text-primary"><i class="bi ${k.i} fs-4"></i></div>
+ <div><div class="small text-secondary">${k.l}</div><div class="fs-5 fw-bold">${k.v}</div><div class="small"><span class="text-success"><i class="bi bi-arrow-up-right"></i> ${k.c}</span> <span class="text-secondary">vs last month</span></div></div></div>
+ <canvas id="spark${n}" height="60"></canvas></div></div></div>`).join('');
 
 kpis.forEach((k, n) => new Chart(document.getElementById('spark' + n), {
     type: 'bar',
@@ -74,9 +75,9 @@ const actions = [
     ['Settings', 'Account Settings', 'bi-gear-fill', '#22a06b', '#e8f6ec']
 ];
 
-document.getElementById('actions').innerHTML = actions.map(a => `<div class="col-sm-4"><a href="#" class="act" style="background:${a[4]}">
- <span class="ai" style="background:#fff;color:${a[3]}"><i class="bi ${a[2]}"></i></span>
- <div><b>${a[0]}</b><small>${a[1]}</small></div><i class="bi bi-chevron-right"></i></a></div>`).join('');
+document.getElementById('actions').innerHTML = actions.map(a => `<div class="col-sm-6"><a href="#" class="card card-body h-100 rounded-3 text-decoration-none text-dark">
+ <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary-subtle text-primary p-2 mb-2 align-self-start"><i class="bi ${a[2]}"></i></span>
+ <div class="fw-semibold">${a[0]}</div><small class="d-block text-secondary">${a[1]}</small></a></div>`).join('');
 
 const tx = [
     ['Nov 7, 2026', 'Office Rent', 'Rent', 50000, 'Expense', 'bi-house-fill', '#ef4444'],
@@ -89,10 +90,10 @@ const tx = [
 const fmt = n => '৳ ' + n.toLocaleString('en-IN');
 
 document.getElementById('txBody').innerHTML = tx.map(t => `<tr><td>${t[0]}</td>
- <td><span class="t-ic" style="color:${t[6]};background:${t[6]}1a"><i class="bi ${t[5]}"></i></span>${t[1]}</td><td>${t[2]}</td>
+ <td><i class="bi ${t[5]} text-primary me-2"></i>${t[1]}</td><td>${t[2]}</td>
  <td class="text-end fw-medium">${fmt(t[3])}</td>
- <td class="text-center"><span class="pill ${t[4] == 'Expense' ? 'p-exp' : 'p-inc'}">${t[4]}</span></td>
- <td class="text-center"><span class="pill p-post">Posted</span></td></tr>`).join('');
+ <td class="text-center"><span class="badge ${t[4] == 'Expense' ? 'text-bg-danger' : 'text-bg-success'}">${t[4]}</span></td>
+ <td class="text-center"><span class="badge text-bg-success">Posted</span></td></tr>`).join('');
 
 const ctx = document.getElementById('lineChart').getContext('2d');
 const grad = c => {
@@ -179,8 +180,8 @@ new Chart(document.getElementById('donut'), {
     type: 'doughnut',
     data: {
         datasets: [{
-            data: [50, 28, 18, 4],
-            backgroundColor: ['#2563eb', '#8b5cf6', '#34c38f', '#f59e0b'],
+            data: seg.map(s => s[1]),
+            backgroundColor: seg.map(s => s[3]),
             borderWidth: 2,
             borderColor: '#fff'
         }]
@@ -194,17 +195,19 @@ new Chart(document.getElementById('donut'), {
     }
 });
 
-document.getElementById('legend').innerHTML = seg.map(s => `<li><span class="dot" style="background:${s[3]}"></span>${s[0]}<span class="pc">${s[1]}%</span><span class="am">${fmt(s[2])}</span></li>`).join('');
+document.getElementById('legend').innerHTML = seg.map(s => `<li class="d-flex align-items-center gap-2 py-2"><span class="rounded-circle flex-shrink-0" style="width:.7rem;height:.7rem;background:${s[3]}"></span><span>${s[0]}</span><span class="ms-auto text-end"><b class="d-block">${s[1]}%</b><small class="text-secondary">${fmt(s[2])}</small></span></li>`).join('');
 
 document.querySelectorAll('#menu .nav-link').forEach(a => a.addEventListener('click', e => {
     e.preventDefault();
-    document.querySelectorAll('#menu .nav-link').forEach(x => x.classList.remove('active'));
-    a.classList.add('active');
+    document.querySelectorAll('#menu .nav-link').forEach(x => {
+        x.classList.remove('active', 'bg-primary', 'text-white');
+        x.classList.add('text-white', 'text-opacity-75');
+    });
+    a.classList.add('active', 'bg-primary', 'text-white');
+    a.classList.remove('text-opacity-75');
 }));
 
 document.querySelectorAll('.period .dropdown-item').forEach(a => a.addEventListener('click', e => {
     e.preventDefault();
     document.getElementById('periodLabel').textContent = a.textContent;
 }));
-
-document.getElementById('toggle').addEventListener('click', () => document.getElementById('sidebar').classList.toggle('open'));

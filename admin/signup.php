@@ -1,122 +1,116 @@
-<?php 
-    include_once ("assets/db/bdconfig.php"); ?>
-<!doctype html>
+<?php
+session_start();
+include_once 'assets/db/bdconfig.php';
+
+
+$msg = '';
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $companyId = $_SESSION['company_id'] ?? 1;
+    $name   = trim($_POST['employee_name']);
+    $email  = trim($_POST['email']);
+    $hash = sha1($_POST['password']);
+    $phone  = $_POST['phone'];
+    $desig  = $_POST['designation'];
+    $jdate  = $_POST['joining_date'] ?: null;
+    $salary = $_POST['basic_salary'] ?: 0;
+
+    try {
+        $conn->begin_transaction();
+
+        // 1) users টেবিল (লগইন)
+        $stmt = $conn->prepare(
+            "INSERT INTO users (company_id, name, email, password, role, status)
+             VALUES (?, ?, ?, ?, 'employees', 1)"
+        );
+        $stmt->bind_param("isss", $companyId, $name, $email, $hash);
+        $stmt->execute();
+        $userId = $conn->insert_id;
+
+        // 2) employees টেবিল
+        $stmt = $conn->prepare(
+            "INSERT INTO employees
+             (company_id, user_id, employee_name, phone, designation, joining_date, basic_salary, status)
+             VALUES (?, ?, ?, ?, ?, ?, ?, 1)"
+        );
+        $stmt->bind_param("iissssd", $companyId, $userId, $name, $phone, $desig, $jdate, $salary);
+        $stmt->execute();
+
+        $conn->commit();
+        $msg = "Employee added successfully";
+    } catch (mysqli_sql_exception $e) {
+        $conn->rollback();
+        $msg = ($e->getCode() == 1062) ? "This email already exists" : "Error: " . $e->getMessage();
+    }
+}
+?>
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="theme-color" content="#f6f8fb">
-    <title>Create your account | BizLedger</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="assets/css/signup.css" rel="stylesheet">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Add employee | BizLedger</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
 </head>
-<body>
-    <main class="container min-vh-100 d-flex align-items-center justify-content-center py-4 py-lg-5">
-        <div class="signup-card row g-0 w-100">
-            <section class="col-lg-5 signup-welcome" aria-label="About BizLedger">
-                <a class="signup-brand d-inline-flex align-items-center gap-2 text-decoration-none" href="../index.php" aria-label="BizLedger home">
-                    <span class="signup-brand-mark"><i class="bi bi-grid-1x2-fill" aria-hidden="true"></i></span>
-                    <span>Biz<span class="signup-brand-accent">Ledger</span></span>
-                </a>
+<body class="bg-body-tertiary">
+<main class="container py-4 py-md-5">
+  <div class="row justify-content-center">
+    <div class="col-lg-10 col-xl-9">
+      <header class="text-center mb-4">
+        <span class="d-inline-flex rounded-3 bg-primary-subtle text-primary p-3 fs-4 mb-3"><i class="bi bi-person-plus"></i></span>
+        <h1 class="h3 fw-bold mb-2">Create an employee account</h1>
+        <p class="text-secondary mb-0">Add employee details and create their BizLedger login.</p>
+      </header>
 
-                <div class="signup-message">
-                    <span class="signup-eyebrow"><i class="bi bi-stars me-2" aria-hidden="true"></i>BUILT FOR YOUR BUSINESS</span>
-                    <h1>A better way to manage your business finances.</h1>
-                    <p>Bring your accounts and day-to-day finances together in one clear, easy-to-use workspace.</p>
+      <?php if ($msg): ?><div class="alert alert-info"><?= htmlspecialchars($msg) ?></div><?php endif; ?>
 
-                    <ul class="signup-benefits list-unstyled mb-0">
-                        <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span>Keep your financial activity organized</span></li>
-                        <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span>See the details that matter at a glance</span></li>
-                        <li><i class="bi bi-check-circle-fill" aria-hidden="true"></i><span>Stay focused as your business grows</span></li>
-                    </ul>
-                </div>
-
-                <p class="signup-panel-footer mb-0">A clearer view of your business finances.</p>
-            </section>
-
-            <section class="col-lg-7 signup-form-panel" aria-labelledby="signup-title">
-                <div class="signup-content">
-                    <div class="signup-heading">
-                        <span class="signup-heading-icon"><i class="bi bi-person-plus" aria-hidden="true"></i></span>
-                        <h2 id="signup-title">Create your account</h2>
-                        <p>Get started with BizLedger. It only takes a moment.</p>
-                    </div>
-                    <?php
-              if (isset($_POST['signup'])) {
-                extract($_POST);
-
-                $password = sha1($password);
-
-                //echo "INSERT INTO users ( name, email, password, role ) VALUES ('$name', '$email', '$password', '$role')";
-             $conn->query("INSERT INTO users ( name, email, password, role ) VALUES ('$name', '$email', '$password', '$role')");
-                if($conn->affected_rows){
-                      $_SESSION['url'] = '../index.php';
-                    header("Location: ../index.php");
-               }
-               else{
-                    echo "<p class='error'>Error creating user: " . $conn->error . "</p>";
-               }
-              }
-              ?>
-
-                    <form method="post">
-                        <div class="mb-3">
-                            <label class="form-label" for="name">Full name</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-person" aria-hidden="true"></i></span>
-                                <input class="form-control" type="text" id="name" name="name" placeholder="Your full name" autocomplete="name" maxlength="120" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label" for="email">Email address</label>
-                            <div class="input-group">
-                                <span class="input-group-text"><i class="bi bi-envelope" aria-hidden="true"></i></span>
-                                <input class="form-control" type="text" id="email" name="email" placeholder="you@company.com" autocomplete="email" maxlength="150" required>
-                            </div>
-                        </div>
-
-                        <div class="mb-3">
-                            <label class="form-label" for="role">Role</label>
-                            <select class="form-select" id="role" name="role" required>
-                                <option value="" selected disabled>Choose a role</option>
-                                <option value="employees">employees</option>
-                                <option value="accountant">Accountant</option>
-                                <option value="admin">Admin</option>
-                            </select>
-                        </div>
-
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label" for="password">Password</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-lock" aria-hidden="true"></i></span>
-                                    <input class="form-control" type="password" id="password" name="password" placeholder="Create a password" autocomplete="new-password" required>
-                                </div>
-                                <div class="form-text">Use at least 8 characters.</div>
-                            </div>
-                            <div class="col-md-6">
-                                <label class="form-label" for="confirm_password">Confirm password</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="bi bi-shield-lock" aria-hidden="true"></i></span>
-                                    <input class="form-control" type="password" id="confirm_password" name="confirm_password" placeholder="Enter it again" autocomplete="new-password"  required>
-                                </div>
-                            </div>
-                        </div>
-
-                    
-
-                        <button class="btn btn-primary signup-submit w-100" type="submit" name="signup">
-                            Create account <i class="bi bi-arrow-right ms-1" aria-hidden="true"></i>
-                        </button>
-                    </form>
-
-                    <p class="signup-login text-center mb-0">Already have an account? <a class="signup-link" href="../index.php">Sign in</a></p>
-                    <p class="signup-security text-center mb-0"><i class="bi bi-lock-fill me-1" aria-hidden="true"></i>Your account information stays secure.</p>
-                </div>
-            </section>
+      <section class="card border-0 rounded-4 shadow-sm">
+        <div class="card-body p-4 p-md-5">
+          <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom">
+            <span class="rounded-3 bg-primary-subtle text-primary p-3"><i class="bi bi-person-vcard fs-4"></i></span>
+            <div><h2 class="h5 fw-bold mb-1">Employee information</h2><p class="small text-secondary mb-0">Complete the details below to continue.</p></div>
+          </div>
+          <form method="post" class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" for="employee_name">Full name</label>
+              <input id="employee_name" name="employee_name" class="form-control" placeholder="Full name" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" for="email">Email (login)</label>
+              <input id="email" type="email" name="email" class="form-control" placeholder="name@company.com" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" for="password">Password</label>
+              <input id="password" type="password" name="password" class="form-control" placeholder="Create a password" required>
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" for="phone">Phone</label>
+              <input id="phone" name="phone" class="form-control" placeholder="Phone number">
+            </div>
+            <div class="col-md-6">
+              <label class="form-label fw-semibold" for="designation">Designation</label>
+              <input id="designation" name="designation" class="form-control" placeholder="Job title">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold" for="joining_date">Joining date</label>
+              <input id="joining_date" type="date" name="joining_date" class="form-control">
+            </div>
+            <div class="col-md-3">
+              <label class="form-label fw-semibold" for="basic_salary">Basic salary</label>
+              <input id="basic_salary" type="number" step="0.01" name="basic_salary" class="form-control" placeholder="0.00">
+            </div>
+            <div class="col-12 d-flex flex-wrap gap-2 mt-4 pt-3 border-top">
+              <button class="btn btn-primary px-4"><i class="bi bi-person-plus me-1"></i>Add employee</button>
+              <a href="../index.php" class="btn btn-light border px-4">Back to sign in</a>
+            </div>
+          </form>
         </div>
-    </main>
+      </section>
+      <p class="text-center small text-secondary mt-4 mb-0"><i class="bi bi-shield-check me-1"></i>BizLedger account management</p>
+    </div>
+  </div>
+</main>
 </body>
 </html>

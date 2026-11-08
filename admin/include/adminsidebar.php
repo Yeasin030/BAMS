@@ -1,11 +1,93 @@
-<aside class="sidebar" id="sidebar">
-    <div class="brand"><span class="logo"><i class="bi bi-hexagon-fill"></i></span><div><b>BizLedger</b><small>Business Account Management</small></div></div>
-    <nav class="nav flex-column" id="menu"></nav>
-    <div class="grp">ADMIN TOOLS</div>
-    <nav class="nav flex-column" id="tools"></nav>
-    <hr class="side-hr">
-    <nav class="nav flex-column mb-3">
-      <a class="nav-link" href="#"><i class="bi bi-headset"></i>Help &amp; Support</a>
-      <a class="nav-link" href="#"><i class="bi bi-box-arrow-right"></i>Logout</a>
-    </nav>
-  </aside>
+<?php $current = basename($_SERVER['PHP_SELF']); ?>
+<aside class="offcanvas-lg offcanvas-start w-100 h-100 min-vh-100 bg-dark text-white" tabindex="-1" id="sidebar">
+  <div class="offcanvas-header d-lg-none">
+    <h2 class="h5 mb-0">BizLedger</h2>
+    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close menu"></button>
+  </div>
+  <div class="offcanvas-body d-flex flex-column p-3">
+  <a class="d-flex align-items-center gap-2 text-white text-decoration-none fw-bold fs-5 mb-4" href="dashboard_admin.php">
+    <i class="bi bi-hexagon-fill text-primary"></i> BizLedger
+  </a>
+
+  <nav class="nav flex-column gap-1" id="menu">
+
+    <a class="nav-link rounded <?= $current=='dashboard_admin.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="dashboard_admin.php">
+      <i class="bi bi-speedometer2"></i>Dashboard
+    </a>
+
+    <!-- Users & Roles -->
+    <a class="nav-link rounded d-flex align-items-center text-white text-opacity-75" data-bs-toggle="collapse" href="#sub0">
+      <i class="bi bi-people-fill"></i>Users &amp; Roles<i class="bi bi-chevron-down ms-auto small"></i>
+    </a>
+    <div class="collapse <?= in_array($current, ['users.php','permissions.php']) ? 'show' : '' ?>" id="sub0">
+      <a class="nav-link ps-5 <?= $current=='users.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="users.php">All Users</a>
+      <a class="nav-link ps-5 rounded <?= $current=='permissions.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="permissions.php">Roles &amp; Permissions</a>
+    </div>
+
+    <!-- Transactions -->
+    <a class="nav-link rounded d-flex align-items-center text-white text-opacity-75" data-bs-toggle="collapse" href="#sub1">
+      <i class="bi bi-arrow-left-right"></i>Transactions<i class="bi bi-chevron-down ms-auto small"></i>
+    </a>
+    <div class="collapse <?= in_array($current, ['transactions.php','add_transaction.php']) ? 'show' : '' ?>" id="sub1">
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="transactions.php">All Transactions</a>
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="add_transaction.php">Add Transaction</a>
+    </div>
+
+    <!-- Products & Stock -->
+    <a class="nav-link rounded d-flex align-items-center text-white text-opacity-75" data-bs-toggle="collapse" href="#sub2">
+      <i class="bi bi-box-seam-fill"></i>Products &amp; Stock<i class="bi bi-chevron-down ms-auto small"></i>
+    </a>
+    <div class="collapse <?= in_array($current, ['products.php','stock.php']) ? 'show' : '' ?>" id="sub2">
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="products.php">Products</a>
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="stock.php">Stock Levels</a>
+    </div>
+
+    <!-- Sales & Invoices -->
+    <a class="nav-link rounded d-flex align-items-center text-white text-opacity-75" data-bs-toggle="collapse" href="#sub3">
+      <i class="bi bi-cart-fill"></i>Sales &amp; Invoices<i class="bi bi-chevron-down ms-auto small"></i>
+    </a>
+    <div class="collapse <?= in_array($current, ['invoices.php','customers.php']) ? 'show' : '' ?>" id="sub3">
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="invoices.php">Invoices</a>
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="customers.php">Customers</a>
+    </div>
+
+    <!-- Reports -->
+    <a class="nav-link rounded d-flex align-items-center text-white text-opacity-75" data-bs-toggle="collapse" href="#sub4">
+      <i class="bi bi-bar-chart-fill"></i>Reports<i class="bi bi-chevron-down ms-auto small"></i>
+    </a>
+    <div class="collapse <?= in_array($current, ['profit_loss.php','balance_sheet.php']) ? 'show' : '' ?>" id="sub4">
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="profit_loss.php">Profit &amp; Loss</a>
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="balance_sheet.php">Balance Sheet</a>
+    </div>
+
+    <!-- Accounts -->
+    <a class="nav-link rounded d-flex align-items-center text-white text-opacity-75" data-bs-toggle="collapse" href="#sub5">
+      <i class="bi bi-bank2"></i>Accounts<i class="bi bi-chevron-down ms-auto small"></i>
+    </a>
+    <div class="collapse <?= in_array($current, ['chart_of_accounts.php','ledgers.php']) ? 'show' : '' ?>" id="sub5">
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="chart_of_accounts.php">Chart of Accounts</a>
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="ledgers.php">Ledgers</a>
+    </div>
+
+    <!-- Settings -->
+    <a class="nav-link rounded d-flex align-items-center text-white text-opacity-75" data-bs-toggle="collapse" href="#sub6">
+      <i class="bi bi-gear-fill"></i>Settings<i class="bi bi-chevron-down ms-auto small"></i>
+    </a>
+    <div class="collapse <?= in_array($current, ['settings_general.php','preferences.php']) ? 'show' : '' ?>" id="sub6">
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="settings_general.php">General</a>
+      <a class="nav-link ps-5 rounded text-white text-opacity-75" href="preferences.php">Preferences</a>
+    </div>
+
+  </nav>
+
+  <div class="text-uppercase small fw-semibold text-white-50 px-3 pt-4 pb-2">Admin Tools</div>
+  <nav class="nav flex-column" id="tools">
+  </nav>
+
+  <hr class="border-light opacity-25">
+  <nav class="nav flex-column mt-auto">
+    <a class="nav-link rounded text-white text-opacity-75" href="#"><i class="bi bi-headset me-2"></i>Help &amp; Support</a>
+    <a class="nav-link rounded text-white text-opacity-75" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+  </nav>
+  </div>
+</aside>

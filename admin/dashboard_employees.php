@@ -5,7 +5,7 @@
     }
 
     if ($_SESSION['role'] != 'employees') {
-    header("Location: /admin/unauthorize.php");
+    header("Location: unauthorize.php");
     }
 ?>
 <!DOCTYPE html>
@@ -17,69 +17,81 @@
 <title>BizLedger Employee Portal</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link href="assets/css/employeesstyle.css" rel="stylesheet">
 </head>
 
-<body>
-<div class="layout">
-    <!-- Sidebar -->
-    <?php include ("include/employsidebar.php");?>
-    
-    <main class="main">
+<body class="bg-body-tertiary">
+<div class="container-fluid px-0">
+<div class="row min-vh-100">
+    <div class="col-lg-3 col-xl-2 p-0 bg-dark">
+      <!-- Sidebar -->
+        <?php include ("include/employsidebar.php");?>
+    </div>
+    <main class="col-12 col-lg-9 col-xl-10 p-0">
         <!-- Header -->
+        <?php include_once ("include/employheadbar.php"); ?>
 
-    <?php include_once ("include/employheadbar.php"); ?>
-
-    <section class="hero">
-      <div><h3>Welcome back, Md. Tanvir Hasan! 👋</h3><p>Stay productive and keep up with your work details.</p></div>
-      <i class="bi bi-laptop hero-art"></i>
+    <div class="p-3 p-md-4 p-xl-5">
+    <section class="d-flex align-items-center justify-content-between p-4 p-lg-5 mb-4 rounded-4 bg-primary text-white shadow-sm">
+      <div><span class="badge bg-white bg-opacity-25 mb-2">Employee portal</span><h1 class="h3 fw-bold">Welcome back, <?= htmlspecialchars($_SESSION['name'] ?? 'Employee') ?>!</h1><p class="mb-0 text-white-50">Your work profile and latest updates at a glance.</p></div>
+      <i class="bi bi-laptop display-5 text-white-50" aria-hidden="true"></i>
     </section>
 
     <div class="row g-3 mb-3">
       <div class="col-xl-8">
-        <div class="cardx h-100">
-          <h6 class="ctitle"><i class="bi bi-people-fill text-primary"></i>Employee Profile</h6><hr class="mt-3 mb-0">
+        <div class="card h-100 border-0 rounded-4 shadow-sm"><div class="card-body p-4">
+          <h2 class="h5 fw-bold"><i class="bi bi-people-fill text-primary me-2"></i>Employee profile</h2><hr class="mt-3 mb-0">
           <div class="row g-0">
-            <div class="col-md-8 d-flex gap-4 pt-3 pe-3">
-              <div class="photo"><div class="ph">TH</div><button class="edit" id="editBtn" title="Edit photo"><i class="bi bi-pencil"></i></button></div>
+            <div class="col-md-8 d-flex flex-column flex-sm-row align-items-center align-items-sm-start gap-4 pt-3 pe-3">
+              <div class="position-relative flex-shrink-0">
+                <div class="ratio ratio-1x1 rounded-circle overflow-hidden bg-secondary text-white d-flex align-items-center justify-content-center fs-2" style="width: 9rem"><div class="d-flex align-items-center justify-content-center" id="photoContent">TH</div></div>
+                <button class="btn btn-light btn-sm rounded-circle position-absolute bottom-0 end-0" id="editBtn" title="Edit photo" type="button"><i class="bi bi-pencil"></i></button>
+              </div>
               <div class="flex-grow-1 min-w-0">
-                <div class="d-flex align-items-center gap-2 mb-3"><h5 class="m-0 fw-bold">Md. Tanvir Hasan</h5><span class="tag">Employee</span></div>
-                <dl class="info" id="info"></dl>
+                <div class="d-flex align-items-center gap-2 mb-3"><h3 class="h5 m-0 fw-bold"><?= htmlspecialchars($_SESSION['name'] ?? 'Employee') ?></h3><span class="badge text-bg-primary"><?= htmlspecialchars($_SESSION['role'] ?? 'employees') ?></span></div>
+                
+                <dl class="mb-0" id="info"></dl>
+                <script>
+                  window.employeeProfile = <?= json_encode(
+                      ['email' => $_SESSION['email'] ?? '', 'role' => $_SESSION['role'] ?? ''],
+                      JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT
+                  ) ?>;
+                </script>
               </div>
             </div>
-            <div class="col-md-4 qi">
+            <div class="col-md-4 border-top border-md-top-0 border-md-start ps-md-3 pt-3">
               <h6 class="fw-bold mb-3">Quick Info</h6>
               <div id="quick"></div>
-            </div>
+            </div></div>
           </div>
         </div>
       </div>
       <div class="col-xl-4">
-        <div class="cardx h-100">
-          <h6 class="ctitle"><i class="bi bi-lightning-charge"></i>Quick Actions</h6><hr class="mt-3">
+        <div class="card h-100 border-0 rounded-4 shadow-sm"><div class="card-body p-4">
+          <h2 class="h5 fw-bold"><i class="bi bi-lightning-charge text-primary me-2"></i>Quick actions</h2><hr class="mt-3">
           <div class="row g-3" id="actions"></div>
-        </div>
+        </div></div>
       </div>
     </div>
 
     <div class="row g-3">
       <div class="col-xl-8">
-        <div class="cardx h-100">
-          <div class="d-flex justify-content-between"><h6 class="ctitle"><i class="bi bi-clock-history"></i>Recent Activity</h6><a href="#" class="viewall">View All <i class="bi bi-arrow-right"></i></a></div>
+        <div class="card h-100 border-0 rounded-4 shadow-sm"><div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center"><h2 class="h5 fw-bold"><i class="bi bi-clock-history text-primary me-2"></i>Recent activity</h2><a href="#" class="link-primary small fw-semibold text-decoration-none">View all <i class="bi bi-arrow-right"></i></a></div>
           <hr class="mt-3">
-          <ul class="timeline" id="activity"></ul>
-        </div>
+          <ul class="list-group list-group-flush" id="activity"></ul>
+        </div></div>
       </div>
       <div class="col-xl-4">
-        <div class="cardx h-100">
-          <div class="d-flex justify-content-between"><h6 class="ctitle"><i class="bi bi-megaphone-fill"></i>Company Notices</h6><a href="#" class="viewall">View All <i class="bi bi-arrow-right"></i></a></div>
+        <div class="card h-100 border-0 rounded-4 shadow-sm"><div class="card-body p-4">
+          <div class="d-flex justify-content-between align-items-center"><h2 class="h5 fw-bold"><i class="bi bi-megaphone-fill text-primary me-2"></i>Company notices</h2><a href="#" class="link-primary small fw-semibold text-decoration-none">View all <i class="bi bi-arrow-right"></i></a></div>
           <hr class="mt-3">
-          <ul class="notices" id="notices"></ul>
-        </div>
+          <ul class="list-group list-group-flush" id="notices"></ul>
+        </div></div>
       </div>
     </div>
+    </div>
   </main>
+</div>
 </div>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="assets/js/employeesscript.js"></script>
