@@ -127,6 +127,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input id="employee_name" name="employee_name" class="form-control" placeholder="e.g. Alex Morgan" required>
                       </div>
                     </div>
+                    
                     <div class="col-md-6">
                       <label class="form-label fw-semibold" for="email">Email (login)</label>
                       <div class="input-group">

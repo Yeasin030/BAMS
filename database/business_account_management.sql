@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 08, 2026 at 02:08 PM
+-- Generation Time: Nov 09, 2026 at 12:31 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.33
 
@@ -131,7 +131,6 @@ CREATE TABLE `employees` (
   `company_id` int UNSIGNED NOT NULL,
   `user_id` int UNSIGNED DEFAULT NULL,
   `employee_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `email` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `phone` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `designation` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `joining_date` date DEFAULT NULL,
@@ -145,10 +144,39 @@ CREATE TABLE `employees` (
 -- Dumping data for table `employees`
 --
 
-INSERT INTO `employees` (`employee_id`, `company_id`, `user_id`, `employee_name`, `email`, `phone`, `designation`, `joining_date`, `basic_salary`, `status`, `created_at`, `updated_at`) VALUES
-(1, 1, 9, 'Yeasin Arafat', 'yeasinarafat5331@gmail.com', '01755329910', 'hr', '2026-11-08', 20000.00, 1, '2026-11-08 05:46:17', '2026-11-08 08:00:27'),
-(2, 1, 10, 'Rokon', 'rokon@gmail.com', '123456978', 'hr', '2026-11-01', 52200.00, 1, '2026-11-08 06:22:16', '2026-11-08 08:00:27'),
-(3, 1, 11, 'Mahir', 'mahir@gmail.com', '11452989', 'As.hr', '2026-11-02', 52465.00, 1, '2026-11-08 06:34:46', '2026-11-08 08:00:27');
+INSERT INTO `employees` (`employee_id`, `company_id`, `user_id`, `employee_name`, `phone`, `designation`, `joining_date`, `basic_salary`, `status`, `created_at`, `updated_at`) VALUES
+(7, 1, 18, 'admin', '01755329910', 'admin', NULL, 152000.00, 1, '2026-11-09 04:50:38', '2026-11-09 04:50:38'),
+(10, 1, 21, 'Yeasin Arafat', '01755329910', 'IT', NULL, 500242.00, 1, '2026-11-09 05:41:05', '2026-11-09 05:41:05'),
+(11, 1, 22, 'accountent', '01576999127', 'accountent', NULL, 5456925.00, 1, '2026-11-09 05:42:37', '2026-11-09 05:42:37');
+
+--
+-- Triggers `employees`
+--
+DELIMITER $$
+CREATE TRIGGER `employ_delete` AFTER DELETE ON `employees` FOR EACH ROW DELETE FROM users WHERE user_id = OLD.user_id
+$$
+DELIMITER ;
+
+-- --------------------------------------------------------
+
+--
+-- Stand-in structure for view `employee_user_view`
+-- (See below for the actual view)
+--
+CREATE TABLE `employee_user_view` (
+`basic_salary` decimal(15,2)
+,`company_id` int unsigned
+,`designation` varchar(100)
+,`email` varchar(150)
+,`employee_id` int unsigned
+,`employee_name` varchar(150)
+,`employee_status` tinyint
+,`joining_date` date
+,`phone` varchar(30)
+,`user_id` int unsigned
+,`user_name` varchar(120)
+,`user_status` tinyint
+);
 
 -- --------------------------------------------------------
 
@@ -469,13 +497,9 @@ CREATE TABLE `users` (
 --
 
 INSERT INTO `users` (`user_id`, `company_id`, `name`, `email`, `password`, `status`, `created_at`, `updated_at`, `role`) VALUES
-(4, 1, 'admin', 'admin@gmail.com', 'd033e22ae348aeb5660fc2140aec35850c4da997', 1, '2026-11-06 16:19:13', '2026-11-06 16:19:13', 'admin'),
-(5, 1, 'user', 'user', '12dea96fec20593566ab75692c9949596833adc9', 1, '2026-11-06 16:21:26', '2026-11-07 15:32:26', 'employees'),
-(7, 1, 'accountant', 'accountant', '4cd5edcd9aa8e3aed333a5dccda30a3b4a7eeeb7', 1, '2026-11-06 17:15:55', '2026-11-06 17:15:55', 'accountant'),
-(8, 1, 'accountent', 'accountent@gmail.com', '02f7eb57679e95c8d3514c984ccb7fe92f3495fc', 1, '2026-11-08 02:51:22', '2026-11-08 02:51:22', 'accountant'),
-(9, 1, 'Yeasin Arafat', 'yeasinarafat5331@gmail.com', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', 1, '2026-11-08 05:46:17', '2026-11-08 05:48:27', 'employees'),
-(10, 1, 'Rokon', 'rokon@gmail.com', '892e0efdb2bd3d90d4a3ab598e8dd4b8baa74025', 1, '2026-11-08 06:22:16', '2026-11-08 06:22:16', 'employees'),
-(11, 1, 'Mahir', 'mahir@gmail.com', 'ffdba47d0f0bfe4b6a9bf8d07e930dd980a9015d', 1, '2026-11-08 06:34:46', '2026-11-08 06:34:46', 'accountant');
+(18, 1, 'admin', 'admin@gmail.com', 'd033e22ae348aeb5660fc2140aec35850c4da997', 1, '2026-11-09 04:50:38', '2026-11-09 04:50:38', 'admin'),
+(21, 1, 'Yeasin Arafat', 'yeasinarafat5331@gmail.com', '9651b57f1c7d1d77ac1f03cd78a39ee31ea83b3a', 1, '2026-11-09 05:41:05', '2026-11-09 05:41:05', 'employees'),
+(22, 1, 'accountent', 'accountent@gmail.com', '02f7eb57679e95c8d3514c984ccb7fe92f3495fc', 1, '2026-11-09 05:42:37', '2026-11-09 05:42:37', 'accountant');
 
 -- --------------------------------------------------------
 
@@ -536,7 +560,6 @@ ALTER TABLE `customers`
 ALTER TABLE `employees`
   ADD PRIMARY KEY (`employee_id`),
   ADD UNIQUE KEY `uq_employees_user` (`user_id`),
-  ADD UNIQUE KEY `uq_employees_email` (`email`),
   ADD KEY `idx_employees_company` (`company_id`);
 
 --
@@ -739,7 +762,7 @@ ALTER TABLE `customers`
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `employee_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `employee_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
 -- AUTO_INCREMENT for table `expenses`
@@ -847,13 +870,22 @@ ALTER TABLE `suppliers`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `user_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
 
 --
 -- AUTO_INCREMENT for table `user_roles`
 --
 ALTER TABLE `user_roles`
   MODIFY `user_role_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+
+-- --------------------------------------------------------
+
+--
+-- Structure for view `employee_user_view`
+--
+DROP TABLE IF EXISTS `employee_user_view`;
+
+CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `employee_user_view`  AS SELECT `e`.`employee_id` AS `employee_id`, `e`.`company_id` AS `company_id`, `e`.`user_id` AS `user_id`, `e`.`employee_name` AS `employee_name`, `e`.`phone` AS `phone`, `e`.`designation` AS `designation`, `e`.`joining_date` AS `joining_date`, `e`.`basic_salary` AS `basic_salary`, `e`.`status` AS `employee_status`, `u`.`name` AS `user_name`, `u`.`email` AS `email`, `u`.`status` AS `user_status` FROM (`employees` `e` left join `users` `u` on((`e`.`user_id` = `u`.`user_id`))) ;
 
 --
 -- Constraints for dumped tables
