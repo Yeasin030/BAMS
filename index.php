@@ -88,7 +88,7 @@
               <label class="form-label" for="email" >Email address</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                <input class="form-control" type="text" id="email" name="email" placeholder="you@company.com" autocomplete="username" required>
+                <input class="form-control" type="text" id="email" name="email" placeholder="you@company.com" value="admin@gmail.com" autocomplete="username" required>
               </div>
             </div>
 
@@ -99,7 +99,7 @@
               </div>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                <input class="form-control" type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+                <input class="form-control" type="password" id="password" name="password" value="admin" placeholder="Enter your password" autocomplete="current-password" required>
                 <button class="btn btn-outline-secondary" type="button" id="togglePassword" aria-label="Show password" aria-pressed="false">
                   <i class="bi bi-eye" aria-hidden="true"></i>
                 </button>

@@ -4,80 +4,45 @@ const kpis = [
         v: '৳ 2,75,000',
         c: '12.5%',
         i: 'bi-currency-exchange',
-        col: '#2563eb',
-        bg: '#e0eaff',
-        d: [3, 4, 5, 6, 8, 9, 11]
     },
     {
         l: 'Total Expenses',
         v: '৳ 1,80,500',
         c: '8.3%',
         i: 'bi-cart3',
-        col: '#22a06b',
-        bg: '#d9f4e6',
-        d: [3, 5, 4, 7, 8, 9, 11]
     },
     {
         l: 'Net Profit',
         v: '৳ 94,500',
         c: '15.2%',
         i: 'bi-graph-up-arrow',
-        col: '#8b5cf6',
-        bg: '#ece4fd',
-        d: [2, 3, 4, 5, 7, 8, 10]
     },
     {
         l: 'Bank Balance',
         v: '৳ 5,20,000',
         c: '6.1%',
         i: 'bi-bank',
-        col: '#f59e0b',
-        bg: '#fdeccf',
-        d: [2, 3, 4, 6, 7, 8, 9]
     }
 ];
 
-document.getElementById('kpis').innerHTML = kpis.map((k, n) => `<div class="col-md-6 col-xl-3"><div class="card h-100 border-0 rounded-4 shadow-sm"><div class="card-body p-4">
+document.getElementById('kpis').innerHTML = kpis.map(k => `<div class="col-md-6 col-xl-3"><div class="card dashboard-card h-100 rounded-4 shadow-sm"><div class="card-body p-4">
  <div class="d-flex align-items-center gap-3">
  <div class="rounded-3 p-3 bg-primary-subtle text-primary"><i class="bi ${k.i} fs-4"></i></div>
  <div><div class="small text-secondary">${k.l}</div><div class="fs-5 fw-bold">${k.v}</div><div class="small"><span class="text-success"><i class="bi bi-arrow-up-right"></i> ${k.c}</span> <span class="text-secondary">vs last month</span></div></div></div>
- <canvas id="spark${n}" height="60"></canvas></div></div></div>`).join('');
-
-kpis.forEach((k, n) => new Chart(document.getElementById('spark' + n), {
-    type: 'bar',
-    data: {
-        labels: k.d.map((_, i) => i),
-        datasets: [{
-            data: k.d,
-            backgroundColor: k.d.map((_, i) => k.col + (30 + i * 10).toString(16).padStart(2, '0').slice(-2)),
-            borderRadius: 2
-        }]
-    },
-    options: {
-        plugins: {
-            legend: { display: false },
-            tooltip: { enabled: false }
-        },
-        scales: {
-            x: { display: false },
-            y: { display: false }
-        },
-        events: []
-    }
-}));
+</div></div></div>`).join('');
 
 const actions = [
-    ['Add Transaction', 'Income or Expense', 'bi-file-earmark-plus-fill', '#2563eb', '#e8f0ff'],
-    ['Generate Report', 'PDF / Excel', 'bi-file-earmark-bar-graph-fill', '#22a06b', '#e4f7ec'],
-    ['View Ledgers', 'All Accounts', 'bi-journal-bookmark-fill', '#8b5cf6', '#f0e9fe'],
-    ['Manage Invoices', 'Create & Track', 'bi-calculator-fill', '#f59e0b', '#fff1dc'],
-    ['Set Budget', 'Plan Your Budget', 'bi-pie-chart-fill', '#0e8fb5', '#e1f3fa'],
-    ['Settings', 'Account Settings', 'bi-gear-fill', '#22a06b', '#e8f6ec']
+    ['Add Transaction', 'Income or Expense', 'bi-file-earmark-plus-fill'],
+    ['Generate Report', 'PDF / Excel', 'bi-file-earmark-bar-graph-fill'],
+    ['View Ledgers', 'All Accounts', 'bi-journal-bookmark-fill'],
+    ['Manage Invoices', 'Create & Track', 'bi-calculator-fill'],
+    ['Set Budget', 'Plan Your Budget', 'bi-pie-chart-fill'],
+    ['Settings', 'Account Settings', 'bi-gear-fill']
 ];
 
-document.getElementById('actions').innerHTML = actions.map(a => `<div class="col-sm-6"><a href="#" class="card card-body h-100 rounded-3 text-decoration-none text-dark">
+document.getElementById('actions').innerHTML = actions.map(a => `<div class="col-sm-6"><div class="card dashboard-card card-body h-100 rounded-3 text-dark">
  <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary-subtle text-primary p-2 mb-2 align-self-start"><i class="bi ${a[2]}"></i></span>
- <div class="fw-semibold">${a[0]}</div><small class="d-block text-secondary">${a[1]}</small></a></div>`).join('');
+ <div class="fw-semibold">${a[0]}</div><small class="d-block text-secondary">${a[1]}</small></div></div>`).join('');
 
 const tx = [
     ['Nov 7, 2026', 'Office Rent', 'Rent', 50000, 'Expense', 'bi-house-fill', '#ef4444'],
@@ -196,18 +161,3 @@ new Chart(document.getElementById('donut'), {
 });
 
 document.getElementById('legend').innerHTML = seg.map(s => `<li class="d-flex align-items-center gap-2 py-2"><span class="rounded-circle flex-shrink-0" style="width:.7rem;height:.7rem;background:${s[3]}"></span><span>${s[0]}</span><span class="ms-auto text-end"><b class="d-block">${s[1]}%</b><small class="text-secondary">${fmt(s[2])}</small></span></li>`).join('');
-
-document.querySelectorAll('#menu .nav-link').forEach(a => a.addEventListener('click', e => {
-    e.preventDefault();
-    document.querySelectorAll('#menu .nav-link').forEach(x => {
-        x.classList.remove('active', 'bg-primary', 'text-white');
-        x.classList.add('text-white', 'text-opacity-75');
-    });
-    a.classList.add('active', 'bg-primary', 'text-white');
-    a.classList.remove('text-opacity-75');
-}));
-
-document.querySelectorAll('.period .dropdown-item').forEach(a => a.addEventListener('click', e => {
-    e.preventDefault();
-    document.getElementById('periodLabel').textContent = a.textContent;
-}));

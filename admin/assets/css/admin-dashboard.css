@@ -1,0 +1,25 @@
+body {
+  background: #f5f7fb !important;
+}
+
+#actions .card {
+  border-color: #e9edf5 !important;
+  transition: border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+}
+
+#actions .card:hover,
+#actions .card:focus-visible {
+  border-color: #b9c9f5 !important;
+  box-shadow: 0 .5rem 1rem rgba(49, 89, 201, .1);
+  transform: translateY(-2px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #actions .card {
+    transition: none;
+  }
+
+  #actions .card:hover {
+    transform: none;
+  }
+}
