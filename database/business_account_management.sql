@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 09, 2026 at 12:31 PM
+-- Generation Time: Nov 10, 2026 at 12:51 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.33
 
@@ -133,27 +133,48 @@ CREATE TABLE `employees` (
   `employee_name` varchar(150) COLLATE utf8mb4_unicode_ci NOT NULL,
   `phone` varchar(30) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `designation` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `department` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
   `joining_date` date DEFAULT NULL,
   `basic_salary` decimal(15,2) NOT NULL DEFAULT '0.00',
   `status` tinyint NOT NULL DEFAULT '1',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `login_email` varchar(150) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `login_password` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `login_role` enum('admin','accountant','employees') CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 --
 -- Dumping data for table `employees`
 --
 
-INSERT INTO `employees` (`employee_id`, `company_id`, `user_id`, `employee_name`, `phone`, `designation`, `joining_date`, `basic_salary`, `status`, `created_at`, `updated_at`) VALUES
-(7, 1, 18, 'admin', '01755329910', 'admin', NULL, 152000.00, 1, '2026-11-09 04:50:38', '2026-11-09 04:50:38'),
-(10, 1, 21, 'Yeasin Arafat', '01755329910', 'IT', NULL, 500242.00, 1, '2026-11-09 05:41:05', '2026-11-09 05:41:05'),
-(11, 1, 22, 'accountent', '01576999127', 'accountent', NULL, 5456925.00, 1, '2026-11-09 05:42:37', '2026-11-09 05:42:37');
+INSERT INTO `employees` (`employee_id`, `company_id`, `user_id`, `employee_name`, `phone`, `designation`, `department`, `joining_date`, `basic_salary`, `status`, `created_at`, `updated_at`, `login_email`, `login_password`, `login_role`) VALUES
+(7, 1, 18, 'admin', '01755329910', 'admin', NULL, NULL, 152000.00, 1, '2026-11-09 04:50:38', '2026-11-09 04:50:38', NULL, NULL, NULL),
+(10, 1, 21, 'Yeasin Arafat', '01755329910', 'IT', NULL, NULL, 500242.00, 1, '2026-11-09 05:41:05', '2026-11-09 05:41:05', NULL, NULL, NULL),
+(11, 1, 22, 'accountent', '01576999127', 'accountent', NULL, NULL, 5456925.00, 1, '2026-11-09 05:42:37', '2026-11-09 05:42:37', NULL, NULL, NULL),
+(12, 1, 23, 'Apon', '145012258', 'Sals', 'Markertin', '2026-11-06', 44502.00, 1, '2026-11-10 04:00:11', '2026-11-10 06:24:25', 'apon@gmail.com', '5f990f027684051c6ed8f9fdc21bf5ef710937cf', 'employees');
 
 --
 -- Triggers `employees`
 --
 DELIMITER $$
 CREATE TRIGGER `employ_delete` AFTER DELETE ON `employees` FOR EACH ROW DELETE FROM users WHERE user_id = OLD.user_id
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `employes_to_uaser_insart` BEFORE INSERT ON `employees` FOR EACH ROW IF NEW.user_id IS NULL AND NEW.login_email IS NOT NULL THEN
+        INSERT INTO users (company_id, name, email, password, status, role)
+        VALUES (
+            NEW.company_id,
+            LEFT(NEW.employee_name, 120),
+            NEW.login_email,
+            NEW.login_password,
+            NEW.status,
+            COALESCE(NEW.login_role, 'employees')
+        );
+
+        SET NEW.user_id = LAST_INSERT_ID();
+    END IF
 $$
 DELIMITER ;
 
@@ -164,17 +185,17 @@ DELIMITER ;
 -- (See below for the actual view)
 --
 CREATE TABLE `employee_user_view` (
-`basic_salary` decimal(15,2)
+`employee_id` int unsigned
 ,`company_id` int unsigned
-,`designation` varchar(100)
-,`email` varchar(150)
-,`employee_id` int unsigned
-,`employee_name` varchar(150)
-,`employee_status` tinyint
-,`joining_date` date
-,`phone` varchar(30)
 ,`user_id` int unsigned
+,`employee_name` varchar(150)
+,`phone` varchar(30)
+,`designation` varchar(100)
+,`joining_date` date
+,`basic_salary` decimal(15,2)
+,`employee_status` tinyint
 ,`user_name` varchar(120)
+,`email` varchar(150)
 ,`user_status` tinyint
 );
 
@@ -499,7 +520,8 @@ CREATE TABLE `users` (
 INSERT INTO `users` (`user_id`, `company_id`, `name`, `email`, `password`, `status`, `created_at`, `updated_at`, `role`) VALUES
 (18, 1, 'admin', 'admin@gmail.com', 'd033e22ae348aeb5660fc2140aec35850c4da997', 1, '2026-11-09 04:50:38', '2026-11-09 04:50:38', 'admin'),
 (21, 1, 'Yeasin Arafat', 'yeasinarafat5331@gmail.com', '9651b57f1c7d1d77ac1f03cd78a39ee31ea83b3a', 1, '2026-11-09 05:41:05', '2026-11-09 05:41:05', 'employees'),
-(22, 1, 'accountent', 'accountent@gmail.com', '02f7eb57679e95c8d3514c984ccb7fe92f3495fc', 1, '2026-11-09 05:42:37', '2026-11-09 05:42:37', 'accountant');
+(22, 1, 'accountent', 'accountent@gmail.com', '02f7eb57679e95c8d3514c984ccb7fe92f3495fc', 1, '2026-11-09 05:42:37', '2026-11-09 05:42:37', 'accountant'),
+(23, 1, 'Apon', 'apon@gmail.com', '5f990f027684051c6ed8f9fdc21bf5ef710937cf', 1, '2026-11-10 04:00:11', '2026-11-10 04:00:11', 'employees');
 
 -- --------------------------------------------------------
 
@@ -762,7 +784,7 @@ ALTER TABLE `customers`
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `employee_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
+  MODIFY `employee_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
 
 --
 -- AUTO_INCREMENT for table `expenses`
@@ -870,7 +892,7 @@ ALTER TABLE `suppliers`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=23;
+  MODIFY `user_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
 
 --
 -- AUTO_INCREMENT for table `user_roles`

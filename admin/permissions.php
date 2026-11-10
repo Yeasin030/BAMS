@@ -20,43 +20,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $msg = "Invalid request. Please try again.";
     $msgType = 'danger';
   } else {
-    $companyId = $_SESSION['company_id'] ?? 1;
+    $companyId = (int) ($_SESSION['company_id'] ?? 1);
     $name   = trim($_POST['employee_name']);
     $email  = trim($_POST['email']);
     $hash   = sha1($_POST['password']);
     $role   = $_POST['role'] ?? '';
-    $phone  = $_POST['phone'];
-    $desig  = $_POST['designation'];
+    $phone  = trim($_POST['phone']);
+    $desig  = trim($_POST['designation']);
     $jdate  = $_POST['joining_date'] ?: null;
-    $salary = $_POST['basic_salary'] ?: 0;
+    $salary = (float) ($_POST['basic_salary'] ?: 0);
 
     if (!in_array($role, $allowedRoles, true)) {
       $msg = "Invalid role selected.";
       $msgType = 'danger';
     } else {
       try {
-        $conn->begin_transaction();
-
-        $stmt = $conn->prepare(
-          "INSERT INTO users (company_id, name, email, password, role, status)
-                     VALUES (?, ?, ?, ?, ?, 1)"
-        );
-        $stmt->bind_param("issss", $companyId, $name, $email, $hash, $role);
-        $stmt->execute();
-        $userId = $conn->insert_id;
+        
         $stmt = $conn->prepare(
           "INSERT INTO employees
-                     (company_id, user_id, employee_name, phone, designation, joining_date, basic_salary, status)
-                     VALUES (?, ?, ?, ?, ?, ?, ?, 1)"
+             (company_id, employee_name, phone, designation, joining_date, basic_salary, status,
+              login_email, login_password, login_role)
+           VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)"
         );
-        $stmt->bind_param("iissssd", $companyId, $userId, $name, $phone, $desig, $jdate, $salary);
+        $stmt->bind_param(
+          "issssdsss",
+          $companyId, $name, $phone, $desig, $jdate, $salary,
+          $email, $hash, $role
+        );
         $stmt->execute();
+        $stmt->close();
 
-        $conn->commit();
         $msg = "Employee added successfully";
         $msgType = 'success';
+        $_SESSION['csrf'] = bin2hex(random_bytes(32));
       } catch (mysqli_sql_exception $e) {
-        $conn->rollback();
         $msg = ($e->getCode() == 1062) ? "This email already exists" : "Error: " . $e->getMessage();
         $msgType = 'danger';
       }
@@ -89,7 +86,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         <main class="p-3 p-md-4 p-xl-5">
 
           <!-- Hero -->
-          
+          <div class="bg-primary-subtle border-bottom"></div>
 
           <?php if ($msg): ?>
             <div class="alert alert-<?= $msgType ?> alert-dismissible fade show rounded-4 shadow-sm" role="alert">
