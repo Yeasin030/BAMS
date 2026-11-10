@@ -6,60 +6,29 @@ if (($_SESSION['role'] ?? '') !== 'admin') {
   header('Location: login.php');
   exit;
 }
+ if($_SERVER["REQUEST_METHOD"] == "POST"){
+          
+        $company_id = (int) ($_SESSION['company_id'] ?? 1);
+        $name = $_POST['name'];
+        $email = $_POST['email'];
+        $phone = $_POST['phone'];
+        $temporary_password = sha1($_POST['temporary_password']);
+        $designation = $_POST['designation'];
+        $department = $_POST['department'];
+        $joining_date = $_POST['joining_date'];
+        $basic_salary = $_POST['basic_salary'];
+        $role = $_POST['role'];
 
-if (empty($_SESSION['csrf'])) {
-  $_SESSION['csrf'] = bin2hex(random_bytes(32));
-}
-
-$msg = '';
-$msgType = 'info';
-$allowedRoles = ['admin', 'accountant', 'employees'];
-
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-  if (!hash_equals($_SESSION['csrf'], $_POST['csrf'] ?? '')) {
-    $msg = "Invalid request. Please try again.";
-    $msgType = 'danger';
-  } else {
-    $companyId = (int) ($_SESSION['company_id'] ?? 1);
-    $name   = trim($_POST['employee_name']);
-    $email  = trim($_POST['email']);
-    $hash   = sha1($_POST['password']);
-    $role   = $_POST['role'] ?? '';
-    $phone  = trim($_POST['phone']);
-    $desig  = trim($_POST['designation']);
-    $jdate  = $_POST['joining_date'] ?: null;
-    $salary = (float) ($_POST['basic_salary'] ?: 0);
-
-    if (!in_array($role, $allowedRoles, true)) {
-      $msg = "Invalid role selected.";
-      $msgType = 'danger';
-    } else {
-      try {
         
-        $stmt = $conn->prepare(
-          "INSERT INTO employees
-             (company_id, employee_name, phone, designation, joining_date, basic_salary, status,
-              login_email, login_password, login_role)
-           VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?, ?)"
-        );
-        $stmt->bind_param(
-          "issssdsss",
-          $companyId, $name, $phone, $desig, $jdate, $salary,
-          $email, $hash, $role
-        );
-        $stmt->execute();
-        $stmt->close();
+        $conn -> query("INSERT INTO employees (company_id, employee_name, phone, designation, department, joining_date, basic_salary, status, login_email, login_password, login_role)
+        VALUES ('$company_id', '$name', '$phone', '$designation', '$department', '$joining_date', '$basic_salary', 1, '$email', '$temporary_password', '$role')");
 
-        $msg = "Employee added successfully";
-        $msgType = 'success';
-        $_SESSION['csrf'] = bin2hex(random_bytes(32));
-      } catch (mysqli_sql_exception $e) {
-        $msg = ($e->getCode() == 1062) ? "This email already exists" : "Error: " . $e->getMessage();
-        $msgType = 'danger';
-      }
+        if($conn -> affected_rows){
+            header('Location: ../admin/employlist.php');
+            exit;
+        };
+
     }
-  }
-}
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -85,16 +54,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         <main class="p-3 p-md-4 p-xl-5">
 
-          <!-- Hero -->
-          <div class="bg-primary-subtle border-bottom"></div>
-
-          <?php if ($msg): ?>
-            <div class="alert alert-<?= $msgType ?> alert-dismissible fade show rounded-4 shadow-sm" role="alert">
-              <?= htmlspecialchars($msg) ?>
-              <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-            </div>
-          <?php endif; ?>
-
           <section class="card dashboard-card rounded-4 shadow-sm" aria-labelledby="employee-form-title">
             <div class="card-body p-0">
 
@@ -109,7 +68,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
               </div>
 
               <form method="post" class="p-3 p-md-4">
-                <input type="hidden" name="csrf" value="<?= $_SESSION['csrf'] ?>">
 
                 <!-- Account information -->
                 <div class="mb-4">
@@ -118,13 +76,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                   </h3>
                   <div class="row g-3">
                     <div class="col-md-6">
-                      <label class="form-label fw-semibold" for="employee_name">Full name</label>
+                      <label class="form-label fw-semibold" for="name">Full name</label>
                       <div class="input-group">
                         <span class="input-group-text bg-light text-secondary"><i class="bi bi-person"></i></span>
-                        <input id="employee_name" name="employee_name" class="form-control" placeholder="e.g. Alex Morgan" required>
+                        <input id="name" name="name" class="form-control" placeholder="e.g. Alex Morgan" required>
                       </div>
                     </div>
-                    
+
                     <div class="col-md-6">
                       <label class="form-label fw-semibold" for="email">Email (login)</label>
                       <div class="input-group">
@@ -132,25 +90,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input id="email" type="email" name="email" class="form-control" placeholder="name@company.com" required>
                       </div>
                     </div>
+
                     <div class="col-md-6">
-                      <label class="form-label fw-semibold" for="password">Password</label>
+                      <label class="form-label fw-semibold" for="temporary_password">Password</label>
                       <div class="input-group">
                         <span class="input-group-text bg-light text-secondary"><i class="bi bi-key"></i></span>
-                        <input id="password" type="password" name="password" class="form-control" placeholder="Password" required>
+                        <input id="temporary_password" type="password" name="temporary_password" class="form-control" placeholder="Password" required>
                         <button class="btn btn-light border" type="button" id="togglePassword" aria-label="Show or hide password">
                           <i class="bi bi-eye" id="togglePasswordIcon"></i>
                         </button>
                       </div>
                     </div>
+
                     <div class="col-md-6">
                       <label class="form-label fw-semibold" for="role">Role</label>
                       <div class="input-group">
                         <span class="input-group-text bg-light text-secondary"><i class="bi bi-person-badge"></i></span>
                         <select id="role" name="role" class="form-select" required>
                           <option value="" disabled selected>Select role</option>
-                          <?php foreach ($allowedRoles as $r): ?>
-                            <option value="<?= htmlspecialchars($r) ?>"><?= ucfirst(htmlspecialchars($r)) ?></option>
-                          <?php endforeach; ?>
+                          <option value="admin">Admin</option>
+                          <option value="accountant">Accountant</option>
+                          <option value="employees">Employee</option>
                         </select>
                       </div>
                     </div>
@@ -172,6 +132,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input id="phone" name="phone" class="form-control" placeholder="Phone">
                       </div>
                     </div>
+
                     <div class="col-md-6">
                       <label class="form-label fw-semibold" for="designation">Designation</label>
                       <div class="input-group">
@@ -179,6 +140,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input id="designation" name="designation" class="form-control" placeholder="Designation">
                       </div>
                     </div>
+
+                    <div class="col-md-6">
+                      <label class="form-label fw-semibold" for="department">Department</label>
+                      <div class="input-group">
+                        <span class="input-group-text bg-light text-secondary"><i class="bi bi-building"></i></span>
+                        <input id="department" name="department" class="form-control" placeholder="Department">
+                      </div>
+                    </div>
+
                     <div class="col-md-6">
                       <label class="form-label fw-semibold" for="joining_date">Joining date</label>
                       <div class="input-group">
@@ -186,6 +156,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         <input id="joining_date" type="date" name="joining_date" class="form-control">
                       </div>
                     </div>
+
                     <div class="col-md-6">
                       <label class="form-label fw-semibold" for="basic_salary">Basic salary</label>
                       <div class="input-group">
@@ -209,20 +180,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         </main>
 
-        
       </div>
     </div>
   </div>
-<script>
-          document.getElementById('togglePassword').addEventListener('click', function() {
-            var input = document.getElementById('password');
-            var icon = document.getElementById('togglePasswordIcon');
-            var show = input.type === 'password';
-            input.type = show ? 'text' : 'password';
-            icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
-          });
-        </script>
+
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    document.getElementById('togglePassword').addEventListener('click', function () {
+      var input = document.getElementById('temporary_password');
+      var icon = document.getElementById('togglePasswordIcon');
+      var show = input.type === 'password';
+      input.type = show ? 'text' : 'password';
+      icon.className = show ? 'bi bi-eye-slash' : 'bi bi-eye';
+    });
+  </script>
 </body>
 
 </html>
