@@ -19,8 +19,8 @@
       <a class="nav-link rounded d-flex align-items-center px-2 py-1 small text-white text-opacity-75" data-bs-toggle="collapse" href="#sub0">
         <i class="bi bi-people-fill"></i>Users &amp; Roles<i class="bi bi-chevron-down ms-auto small"></i>
       </a>
-      <div class="collapse <?= in_array($current, ['users.php', 'permissions.php']) ? 'show' : '' ?>" id="sub0">
-        <a class="nav-link ps-4 py-1 small <?= $current == 'employlist.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="employlist.php">All Users</a>
+      <div class="collapse <?= in_array($current, ['users.php', 'permissions.php', 'employlist.php', 'employedit.php']) ? 'show' : '' ?>" id="sub0">
+        <a class="nav-link ps-4 py-1 small <?= in_array($current, ['employlist.php', 'employedit.php']) ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="employlist.php">All Users</a>
         <a class="nav-link ps-4 py-1 small rounded <?= $current == 'permissions.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="permissions.php">Roles &amp; Permissions</a>
       </div>
 

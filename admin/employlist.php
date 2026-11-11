@@ -1,7 +1,8 @@
 <?php
 session_start();
 include_once 'assets/db/bdconfig.php';
-$rowData = $conn->query("SELECT * FROM employee_user_view ORDER BY employee_id DESC");
+$rowData = $conn->query("SELECT * FROM employees ORDER BY employee_id DESC");
+
 ?>
 
 <!DOCTYPE html>
@@ -61,7 +62,8 @@ $rowData = $conn->query("SELECT * FROM employee_user_view ORDER BY employee_id D
                                             <th scope="col" class="py-3 small text-uppercase text-secondary">ID</th>
                                             <th scope="col" class="py-3 small text-uppercase text-secondary">Phone</th>
                                             <th scope="col" class="py-3 small text-uppercase text-secondary">Designation</th>
-                                            <th scope="col" class="py-3 small text-uppercase text-secondary">Status</th>
+                                            <th scope="col" class="py-3 small text-uppercase text-secondary">Department</th>
+                                            <th scope="col" class="py-3 small text-uppercase text-secondary">Salary</th>
                                             <th scope="col" class="pe-4 py-3 small text-uppercase text-secondary text-end">Actions</th>
                                         </tr>
                                     </thead>
@@ -72,37 +74,33 @@ $rowData = $conn->query("SELECT * FROM employee_user_view ORDER BY employee_id D
                                                 $nameParts = preg_split('/\s+/', trim($row['employee_name']));
                                                 $initials = strtoupper(substr($nameParts[0] ?? '', 0, 1) . (count($nameParts) > 1 ? substr(end($nameParts), 0, 1) : ''));
                                                 $status = strtolower((string) ($row['employee_status'] ?? ''));
-                                                $isActive = in_array($status, ['active', '1'], true);
+                                               
                                                 ?>
                                                 <tr>
                                                     <td class="ps-4 py-3">
                                                         <div class="d-flex align-items-center gap-3">
                                                             <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary fw-semibold flex-shrink-0" style="width: 2.5rem; height: 2.5rem">
-                                                                <?php echo htmlspecialchars($initials, ENT_QUOTES, 'UTF-8'); ?>
+                                                                <?php echo $initials ; ?>
                                                             </span>
                                                             <div>
-                                                                <div class="fw-semibold"><?php echo htmlspecialchars($row['employee_name'], ENT_QUOTES, 'UTF-8'); ?></div>
-                                                                <div class="small text-secondary"><?php echo htmlspecialchars($row['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?></div>
+                                                                <div class="fw-semibold"><?php echo $row['employee_name']; ?></div>
+                                                                <div class="small text-secondary"><?php echo $row['login_email'] ; ?></div>
                                                             </div>
                                                         </div>
                                                     </td>
                                                     <td class="fw-semibold text-secondary">
                                                         EMP-<?php echo str_pad((int) $row['employee_id'], 3, '0', STR_PAD_LEFT); ?>
                                                     </td>
-                                                    <td class="text-secondary"><?php echo htmlspecialchars($row['phone'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                                                    <td class="text-secondary"><?php echo htmlspecialchars($row['designation'] ?? '', ENT_QUOTES, 'UTF-8'); ?></td>
-                                                    <td>
-                                                        <?php if ($isActive) { ?>
-                                                            <span class="badge rounded-pill bg-success-subtle text-success-emphasis px-3 py-2">&#9679; Active</span>
-                                                        <?php } else { ?>
-                                                            <span class="badge rounded-pill bg-secondary-subtle text-secondary-emphasis px-3 py-2">&#9679; Inactive</span>
-                                                        <?php } ?>
-                                                    </td>
+                                                    <td class="text-secondary"><?php echo $row['phone'] ; ?></td>
+                                                    <td class="text-secondary"><?php echo $row['designation'] ; ?></td>
+                                                    <td class="text-secondary"><?php echo $row['department'] ; ?></td>
+                                                    <td class="text-secondary"><?php echo $row['basic_salary'] ; ?></td>
+                                                  
                                                     <td class="pe-4 text-end text-nowrap">
-                                                        <a class="btn btn-sm btn-light text-primary" href="permissions.php?id=<?php echo urlencode($row['employee_id']); ?>" aria-label="Edit employee" title="Edit employee">
+                                                        <a class="btn btn-sm btn-light text-primary" href="employedit.php?id=<?php echo $row['employee_id']; ?>" aria-label="Edit employee" title="Edit employee">
                                                             <i class="bi bi-pencil-square" aria-hidden="true"></i>
                                                         </a>
-                                                        <a class="btn btn-sm btn-light text-danger" onclick="return confirm('Delete this employee?')" href="deleteemploy.php?id=<?php echo urlencode($row['employee_id']); ?>" aria-label="Delete employee" title="Delete employee">
+                                                        <a class="btn btn-sm btn-light text-danger" onclick="return confirm('Delete this employee?')" href="deleteemploy.php?id=<?php echo $row['employee_id']; ?>" aria-label="Delete employee" title="Delete employee">
                                                             <i class="bi bi-trash3" aria-hidden="true"></i>
                                                         </a>
                                                     </td>
