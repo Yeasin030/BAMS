@@ -1,0 +1,38 @@
+.transaction-page {
+  color: #17233c;
+}
+
+.transaction-hero {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .16), transparent 25%),
+    linear-gradient(120deg, #173b8f, #3159c9 62%, #4777df);
+}
+
+.transaction-stat,
+.transaction-panel {
+  border: 1px solid #e9edf5;
+  box-shadow: 0 .25rem .75rem rgba(23, 35, 60, .035);
+}
+
+.transaction-stat-icon {
+  width: 2.75rem;
+  height: 2.75rem;
+}
+
+.transaction-table thead th {
+  white-space: nowrap;
+}
+
+.transaction-form .form-label {
+  font-weight: 600;
+  color: #34425b;
+}
+
+.transaction-form .form-control,
+.transaction-form .form-select {
+  min-height: 2.875rem;
+}
+
+.transaction-form textarea.form-control {
+  min-height: 7rem;
+}

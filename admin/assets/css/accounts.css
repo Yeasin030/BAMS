@@ -1,0 +1,102 @@
+.account-page {
+  color: #17233c;
+  font-size: .9rem;
+}
+
+.account-page main > .p-3 {
+  padding: 1rem !important;
+}
+
+@media (min-width: 768px) {
+  .account-page main > .p-md-4 {
+    padding: 1.25rem !important;
+  }
+}
+
+@media (min-width: 1200px) {
+  .account-page main > .p-xl-5 {
+    padding: 1.5rem !important;
+  }
+}
+
+.account-hero {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .16), transparent 25%),
+    linear-gradient(120deg, #173b8f, #3159c9 62%, #4777df);
+  padding: 1.5rem !important;
+  margin-bottom: 1rem !important;
+}
+
+.account-hero h1 {
+  font-size: 1.5rem;
+}
+
+.account-page .alert {
+  padding: .65rem .85rem;
+  margin-bottom: 1rem !important;
+}
+
+.account-stat,
+.account-panel {
+  border: 1px solid #e9edf5;
+  box-shadow: 0 .25rem .75rem rgba(23, 35, 60, .035);
+}
+
+.account-page .account-stat .card-body {
+  padding: 1rem !important;
+}
+
+.account-page .account-stat .h4 {
+  font-size: 1.1rem;
+}
+
+.account-stat-icon {
+  width: 2.35rem;
+  height: 2.35rem;
+  font-size: 1.15rem !important;
+}
+
+.account-table thead th {
+  white-space: nowrap;
+}
+
+.account-table > :not(caption) > * > * {
+  padding-top: .55rem;
+  padding-bottom: .55rem;
+}
+
+.account-table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.account-table .account-child {
+  padding-left: 2.75rem;
+}
+
+.account-toolbar .form-control,
+.account-toolbar .form-select {
+  min-height: 2.4rem;
+  font-size: .85rem;
+}
+
+.account-type-icon {
+  width: 1.85rem;
+  height: 1.85rem;
+}
+
+.account-page .form-control-lg,
+.account-page .form-select-lg,
+.account-page .btn-lg {
+  min-height: 2.6rem;
+  padding-top: .45rem;
+  padding-bottom: .45rem;
+  font-size: .9rem;
+}
+
+.account-page .row.g-3 {
+  --bs-gutter-y: .75rem;
+}
+
+.account-page .mb-4 {
+  margin-bottom: 1rem !important;
+}
