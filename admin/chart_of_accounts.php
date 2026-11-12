@@ -50,10 +50,7 @@ if (($_SESSION['role'] ?? '') != 'admin') {
                         </div>
                     </section>
 
-                    <div class="alert alert-info border-0 rounded-3 d-flex align-items-start gap-2 mb-4" role="note">
-                        <i class="bi bi-info-circle-fill mt-1" aria-hidden="true"></i>
-                        <div><strong>UI preview:</strong> The account list and balances below are examples and are not connected to saved records.</div>
-                    </div>
+                
 
                     <section class="row g-3 mb-4" aria-label="Account summary">
                         <div class="col-12 col-sm-6 col-xl-3">

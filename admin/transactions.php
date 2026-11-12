@@ -1,5 +1,6 @@
 <?php
 session_start();
+include_once 'assets/db/bdconfig.php';
 if (!isset($_SESSION['email'])) {
     header("Location: ../index.php");
     exit;
@@ -9,9 +10,25 @@ if (($_SESSION['role'] ?? '') != 'admin') {
     header("Location: unauthorize.php");
     exit;
 }
+
+$company_id = (int) ($_SESSION['company_id'] ?? 1);
+
+$rowData = $conn->query("
+    SELECT 'income' AS type, i.income_id AS id, i.income_date AS txn_date, i.amount, i.description, c.category_name, i.created_at
+    FROM incomes i
+    JOIN income_categories c ON c.income_category_id = i.income_category_id
+    WHERE i.company_id = $company_id
+    UNION ALL
+    SELECT 'expense', e.expense_id, e.expense_date, e.amount, e.description, c.category_name, e.created_at
+    FROM expenses e
+    JOIN expense_categories c ON c.expense_category_id = e.expense_category_id
+    WHERE e.company_id = $company_id
+    ORDER BY txn_date DESC, created_at DESC
+");
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -21,6 +38,7 @@ if (($_SESSION['role'] ?? '') != 'admin') {
     <link href="assets/css/dashboard-shared.css" rel="stylesheet">
     <link href="assets/css/transactions.css" rel="stylesheet">
 </head>
+
 <body class="bg-body-tertiary dashboard-page transaction-page">
     <div class="container-fluid px-0">
         <div class="row min-vh-100">
@@ -55,7 +73,10 @@ if (($_SESSION['role'] ?? '') != 'admin') {
                             <article class="card transaction-stat rounded-4 h-100">
                                 <div class="card-body d-flex align-items-center gap-3 p-4">
                                     <span class="transaction-stat-icon d-inline-flex align-items-center justify-content-center rounded-3 bg-primary-subtle text-primary fs-4"><i class="bi bi-receipt" aria-hidden="true"></i></span>
-                                    <div><div class="small text-secondary">Transactions this month</div><div class="h4 fw-bold mb-0">24</div></div>
+                                    <div>
+                                        <div class="small text-secondary">Transactions this month</div>
+                                        <div class="h4 fw-bold mb-0">24</div>
+                                    </div>
                                 </div>
                             </article>
                         </div>
@@ -63,7 +84,10 @@ if (($_SESSION['role'] ?? '') != 'admin') {
                             <article class="card transaction-stat rounded-4 h-100">
                                 <div class="card-body d-flex align-items-center gap-3 p-4">
                                     <span class="transaction-stat-icon d-inline-flex align-items-center justify-content-center rounded-3 bg-success-subtle text-success fs-4"><i class="bi bi-graph-up-arrow" aria-hidden="true"></i></span>
-                                    <div><div class="small text-secondary">Money in</div><div class="h4 fw-bold text-success mb-0">$12,840.00</div></div>
+                                    <div>
+                                        <div class="small text-secondary">Money in</div>
+                                        <div class="h4 fw-bold text-success mb-0">$12,840.00</div>
+                                    </div>
                                 </div>
                             </article>
                         </div>
@@ -71,7 +95,10 @@ if (($_SESSION['role'] ?? '') != 'admin') {
                             <article class="card transaction-stat rounded-4 h-100">
                                 <div class="card-body d-flex align-items-center gap-3 p-4">
                                     <span class="transaction-stat-icon d-inline-flex align-items-center justify-content-center rounded-3 bg-danger-subtle text-danger fs-4"><i class="bi bi-graph-down-arrow" aria-hidden="true"></i></span>
-                                    <div><div class="small text-secondary">Money out</div><div class="h4 fw-bold text-danger mb-0">$4,265.50</div></div>
+                                    <div>
+                                        <div class="small text-secondary">Money out</div>
+                                        <div class="h4 fw-bold text-danger mb-0">$4,265.50</div>
+                                    </div>
                                 </div>
                             </article>
                         </div>
@@ -112,46 +139,30 @@ if (($_SESSION['role'] ?? '') != 'admin') {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <tr>
-                                            <td class="ps-4 py-3"><div class="fw-semibold">Website project payment</div><div class="small text-secondary">TRX-2025-024</div></td>
-                                            <td class="text-secondary">Client payment</td>
-                                            <td class="text-secondary text-nowrap">Nov 10, 2026</td>
-                                            <td><span class="badge rounded-pill bg-success-subtle text-success-emphasis px-3 py-2">Income</span></td>
-                                            <td class="text-end fw-semibold text-success">+$2,400.00</td>
-                                            <td class="pe-4 text-end"><span class="badge rounded-pill bg-success-subtle text-success-emphasis">Completed</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="ps-4 py-3"><div class="fw-semibold">Office supplies</div><div class="small text-secondary">TRX-2025-023</div></td>
-                                            <td class="text-secondary">Office expenses</td>
-                                            <td class="text-secondary text-nowrap">Nov 08, 2026</td>
-                                            <td><span class="badge rounded-pill bg-danger-subtle text-danger-emphasis px-3 py-2">Expense</span></td>
-                                            <td class="text-end fw-semibold text-danger">−$185.50</td>
-                                            <td class="pe-4 text-end"><span class="badge rounded-pill bg-success-subtle text-success-emphasis">Completed</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="ps-4 py-3"><div class="fw-semibold">Monthly hosting plan</div><div class="small text-secondary">TRX-2025-022</div></td>
-                                            <td class="text-secondary">Software &amp; services</td>
-                                            <td class="text-secondary text-nowrap">Nov 06, 2026</td>
-                                            <td><span class="badge rounded-pill bg-danger-subtle text-danger-emphasis px-3 py-2">Expense</span></td>
-                                            <td class="text-end fw-semibold text-danger">−$49.00</td>
-                                            <td class="pe-4 text-end"><span class="badge rounded-pill bg-warning-subtle text-warning-emphasis">Pending</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="ps-4 py-3"><div class="fw-semibold">Consulting services</div><div class="small text-secondary">TRX-2025-021</div></td>
-                                            <td class="text-secondary">Service income</td>
-                                            <td class="text-secondary text-nowrap">Nov 04, 2026</td>
-                                            <td><span class="badge rounded-pill bg-success-subtle text-success-emphasis px-3 py-2">Income</span></td>
-                                            <td class="text-end fw-semibold text-success">+$875.00</td>
-                                            <td class="pe-4 text-end"><span class="badge rounded-pill bg-success-subtle text-success-emphasis">Completed</span></td>
-                                        </tr>
-                                        <tr>
-                                            <td class="ps-4 py-3"><div class="fw-semibold">Team lunch</div><div class="small text-secondary">TRX-2025-020</div></td>
-                                            <td class="text-secondary">Meals</td>
-                                            <td class="text-secondary text-nowrap">Nov 02, 2026</td>
-                                            <td><span class="badge rounded-pill bg-danger-subtle text-danger-emphasis px-3 py-2">Expense</span></td>
-                                            <td class="text-end fw-semibold text-danger">−$126.75</td>
-                                            <td class="pe-4 text-end"><span class="badge rounded-pill bg-success-subtle text-success-emphasis">Completed</span></td>
-                                        </tr>
+                                        <?php if ($rowData->num_rows == 0): ?>
+                                            <tr>
+                                                <td colspan="6" class="text-center text-secondary py-5">No transactions yet. <a href="add_transaction.php">Add your first transaction</a></td>
+                                            </tr>
+                                        <?php endif; ?>
+                                        <?php while ($row = $rowData->fetch_assoc()): $isIncome = $row['type'] == 'income'; ?>
+                                            <tr>
+                                                <td class="ps-4 py-3">
+                                                    <div class="fw-semibold"><?php echo $row['description'] !== '' && $row['description'] !== null ? $row['description'] : '—'; ?></div>
+                                                    <div class="small text-secondary"><?php echo ($isIncome ? 'INC-' : 'EXP-') . str_pad($row['id'], 4, '0', STR_PAD_LEFT); ?></div>
+                                                </td>
+                                                <td class="text-secondary"><?php echo $row['category_name']; ?></td>
+                                                <td class="text-secondary text-nowrap"><?php echo date('M d, Y', strtotime($row['txn_date'])); ?></td>
+                                                <td>
+                                                    <?php if ($isIncome): ?>
+                                                        <span class="badge rounded-pill bg-success-subtle text-success-emphasis px-3 py-2">Income</span>
+                                                    <?php else: ?>
+                                                        <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis px-3 py-2">Expense</span>
+                                                    <?php endif; ?>
+                                                </td>
+                                                <td class="text-end fw-semibold <?php echo $isIncome ? 'text-success' : 'text-danger'; ?>"><?php echo ($isIncome ? '+' : '−') . '$' . number_format($row['amount'], 2); ?></td>
+                                                <td class="pe-4 text-end"><span class="badge rounded-pill bg-success-subtle text-success-emphasis">Completed</span></td>
+                                            </tr>
+                                        <?php endwhile; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -175,4 +186,5 @@ if (($_SESSION['role'] ?? '') != 'admin') {
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

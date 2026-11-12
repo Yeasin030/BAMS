@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 10, 2026 at 12:51 PM
+-- Generation Time: Nov 12, 2026 at 01:07 PM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.33
 
@@ -30,7 +30,6 @@ SET time_zone = "+00:00";
 CREATE TABLE `accounts` (
   `account_id` int UNSIGNED NOT NULL,
   `company_id` int UNSIGNED NOT NULL,
-  `category_id` int UNSIGNED NOT NULL,
   `parent_account_id` int UNSIGNED DEFAULT NULL,
   `account_code` varchar(30) COLLATE utf8mb4_unicode_ci NOT NULL,
   `account_name` varchar(120) COLLATE utf8mb4_unicode_ci NOT NULL,
@@ -38,22 +37,19 @@ CREATE TABLE `accounts` (
   `opening_balance_side` enum('DEBIT','CREDIT') COLLATE utf8mb4_unicode_ci NOT NULL DEFAULT 'DEBIT',
   `is_active` tinyint NOT NULL DEFAULT '1',
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  `updated_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `account_categorie` enum('ASSET','LIABILITY','EQUITY','REVENUE','EXPENSE') COLLATE utf8mb4_unicode_ci NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
--- --------------------------------------------------------
-
 --
--- Table structure for table `account_categories`
+-- Dumping data for table `accounts`
 --
 
-CREATE TABLE `account_categories` (
-  `category_id` int UNSIGNED NOT NULL,
-  `company_id` int UNSIGNED NOT NULL,
-  `category_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
-  `account_type` enum('ASSET','LIABILITY','EQUITY','REVENUE','EXPENSE') COLLATE utf8mb4_unicode_ci NOT NULL,
-  `description` text COLLATE utf8mb4_unicode_ci
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+INSERT INTO `accounts` (`account_id`, `company_id`, `parent_account_id`, `account_code`, `account_name`, `opening_balance`, `opening_balance_side`, `is_active`, `created_at`, `updated_at`, `account_categorie`) VALUES
+(1, 1, 1000, '1002', 'gokgok', 456123.00, 'DEBIT', 1, '2026-11-12 04:34:41', '2026-11-12 04:34:41', 'LIABILITY'),
+(2, 1, NULL, '452', 'rokon', 520235.00, 'CREDIT', 1, '2026-11-12 04:39:05', '2026-11-12 04:39:05', 'ASSET'),
+(3, 1, NULL, '4000', 'Service revenue', 0.00, 'DEBIT', 1, '2026-11-12 06:46:41', '2026-11-12 06:46:41', 'REVENUE'),
+(4, 1, NULL, '5000', 'Office expenses', 0.00, 'DEBIT', 1, '2026-11-12 06:46:41', '2026-11-12 06:46:41', 'EXPENSE');
 
 -- --------------------------------------------------------
 
@@ -152,13 +148,27 @@ INSERT INTO `employees` (`employee_id`, `company_id`, `user_id`, `employee_name`
 (7, 1, 18, 'admin', '01755329910', 'admin', NULL, NULL, 152000.00, 1, '2026-11-09 04:50:38', '2026-11-09 04:50:38', NULL, NULL, NULL),
 (10, 1, 21, 'Yeasin Arafat', '01755329910', 'IT', NULL, NULL, 500242.00, 1, '2026-11-09 05:41:05', '2026-11-09 05:41:05', NULL, NULL, NULL),
 (11, 1, 22, 'accountent', '01576999127', 'accountent', NULL, NULL, 5456925.00, 1, '2026-11-09 05:42:37', '2026-11-09 05:42:37', NULL, NULL, NULL),
-(12, 1, 23, 'Apon', '145012258', 'Sals', 'Markertin', '2026-11-06', 44502.00, 1, '2026-11-10 04:00:11', '2026-11-10 06:24:25', 'apon@gmail.com', '5f990f027684051c6ed8f9fdc21bf5ef710937cf', 'employees');
+(12, 1, 23, 'Apon', '145012258', 'Sals', 'Markertin', '2026-11-06', 44502.00, 1, '2026-11-10 04:00:11', '2026-11-10 06:24:25', 'apon@gmail.com', '5f990f027684051c6ed8f9fdc21bf5ef710937cf', 'employees'),
+(13, 1, 24, 'Arafat Hasan', '0175588582', 'IT', 'WEB', '2026-11-04', 200125.00, 1, '2026-11-10 07:06:44', '2026-11-10 07:06:44', 'arafathasan@gmail.com', '601f1889667efaebb33b8c12572835da3f027f78', 'accountant'),
+(14, 1, 26, 'addito', '01576999127', 'Sals and Marketing', 'As.Marleting', '2026-11-07', 45200.00, 1, '2026-11-10 07:09:44', '2026-11-11 05:50:30', 'addito@gmail.com', '601f1889667efaebb33b8c12572835da3f027f78', 'employees'),
+(15, 1, 27, 'Shomun', '2206545', 'IT', 'WEB laraval', '2026-11-07', 152000.00, 1, '2026-11-10 07:11:01', '2026-11-11 06:10:29', 'shomunai@gmail.com', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', 'employees');
 
 --
 -- Triggers `employees`
 --
 DELIMITER $$
 CREATE TRIGGER `employ_delete` AFTER DELETE ON `employees` FOR EACH ROW DELETE FROM users WHERE user_id = OLD.user_id
+$$
+DELIMITER ;
+DELIMITER $$
+CREATE TRIGGER `employees_after_update` AFTER UPDATE ON `employees` FOR EACH ROW BEGIN
+    IF NEW.user_id IS NOT NULL THEN
+        UPDATE users
+        SET name  = NEW.employee_name,
+            email = COALESCE(NEW.login_email, email)
+        WHERE user_id = NEW.user_id;
+    END IF;
+END
 $$
 DELIMITER ;
 DELIMITER $$
@@ -177,27 +187,6 @@ CREATE TRIGGER `employes_to_uaser_insart` BEFORE INSERT ON `employees` FOR EACH 
     END IF
 $$
 DELIMITER ;
-
--- --------------------------------------------------------
-
---
--- Stand-in structure for view `employee_user_view`
--- (See below for the actual view)
---
-CREATE TABLE `employee_user_view` (
-`employee_id` int unsigned
-,`company_id` int unsigned
-,`user_id` int unsigned
-,`employee_name` varchar(150)
-,`phone` varchar(30)
-,`designation` varchar(100)
-,`joining_date` date
-,`basic_salary` decimal(15,2)
-,`employee_status` tinyint
-,`user_name` varchar(120)
-,`email` varchar(150)
-,`user_status` tinyint
-);
 
 -- --------------------------------------------------------
 
@@ -232,6 +221,16 @@ CREATE TABLE `expense_categories` (
   `account_id` int UNSIGNED NOT NULL COMMENT 'Expense account'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `expense_categories`
+--
+
+INSERT INTO `expense_categories` (`expense_category_id`, `company_id`, `category_name`, `account_id`) VALUES
+(1, 1, 'Office expenses', 4),
+(2, 1, 'Travel', 4),
+(3, 1, 'Software & services', 4),
+(4, 1, 'Other expense', 4);
+
 -- --------------------------------------------------------
 
 --
@@ -251,6 +250,13 @@ CREATE TABLE `incomes` (
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+--
+-- Dumping data for table `incomes`
+--
+
+INSERT INTO `incomes` (`income_id`, `company_id`, `income_category_id`, `account_id`, `amount`, `income_date`, `description`, `journal_id`, `created_by`, `created_at`) VALUES
+(1, 1, 3, 2, 50000.00, '2026-11-10', 'haidjfiof', NULL, NULL, '2026-11-12 06:47:24');
+
 -- --------------------------------------------------------
 
 --
@@ -263,6 +269,15 @@ CREATE TABLE `income_categories` (
   `category_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL,
   `account_id` int UNSIGNED NOT NULL COMMENT 'Revenue account'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `income_categories`
+--
+
+INSERT INTO `income_categories` (`income_category_id`, `company_id`, `category_name`, `account_id`) VALUES
+(1, 1, 'Sales income', 3),
+(2, 1, 'Service income', 3),
+(3, 1, 'Other income', 3);
 
 -- --------------------------------------------------------
 
@@ -521,7 +536,10 @@ INSERT INTO `users` (`user_id`, `company_id`, `name`, `email`, `password`, `stat
 (18, 1, 'admin', 'admin@gmail.com', 'd033e22ae348aeb5660fc2140aec35850c4da997', 1, '2026-11-09 04:50:38', '2026-11-09 04:50:38', 'admin'),
 (21, 1, 'Yeasin Arafat', 'yeasinarafat5331@gmail.com', '9651b57f1c7d1d77ac1f03cd78a39ee31ea83b3a', 1, '2026-11-09 05:41:05', '2026-11-09 05:41:05', 'employees'),
 (22, 1, 'accountent', 'accountent@gmail.com', '02f7eb57679e95c8d3514c984ccb7fe92f3495fc', 1, '2026-11-09 05:42:37', '2026-11-09 05:42:37', 'accountant'),
-(23, 1, 'Apon', 'apon@gmail.com', '5f990f027684051c6ed8f9fdc21bf5ef710937cf', 1, '2026-11-10 04:00:11', '2026-11-10 04:00:11', 'employees');
+(23, 1, 'Apon', 'apon@gmail.com', '5f990f027684051c6ed8f9fdc21bf5ef710937cf', 1, '2026-11-10 04:00:11', '2026-11-10 04:00:11', 'employees'),
+(24, 1, 'Arafat Hasan', 'arafathasan@gmail.com', '601f1889667efaebb33b8c12572835da3f027f78', 1, '2026-11-10 07:06:44', '2026-11-10 07:06:44', 'accountant'),
+(26, 1, 'addito', 'addito@gmail.com', '601f1889667efaebb33b8c12572835da3f027f78', 1, '2026-11-10 07:09:44', '2026-11-10 07:09:44', 'employees'),
+(27, 1, 'Shomun', 'shomunai@gmail.com', '40bd001563085fc35165329ea1ff5c5ecbdbbeef', 1, '2026-11-10 07:11:01', '2026-11-11 06:10:29', 'employees');
 
 -- --------------------------------------------------------
 
@@ -545,15 +563,7 @@ CREATE TABLE `user_roles` (
 ALTER TABLE `accounts`
   ADD PRIMARY KEY (`account_id`),
   ADD UNIQUE KEY `uq_accounts_company_code` (`company_id`,`account_code`),
-  ADD KEY `idx_accounts_category` (`category_id`),
   ADD KEY `idx_accounts_parent` (`parent_account_id`);
-
---
--- Indexes for table `account_categories`
---
-ALTER TABLE `account_categories`
-  ADD PRIMARY KEY (`category_id`),
-  ADD UNIQUE KEY `uq_account_category_company_name` (`company_id`,`category_name`);
 
 --
 -- Indexes for table `audit_logs`
@@ -754,13 +764,7 @@ ALTER TABLE `user_roles`
 -- AUTO_INCREMENT for table `accounts`
 --
 ALTER TABLE `accounts`
-  MODIFY `account_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `account_categories`
---
-ALTER TABLE `account_categories`
-  MODIFY `category_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `account_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `audit_logs`
@@ -784,7 +788,7 @@ ALTER TABLE `customers`
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `employee_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `employee_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
 
 --
 -- AUTO_INCREMENT for table `expenses`
@@ -796,19 +800,19 @@ ALTER TABLE `expenses`
 -- AUTO_INCREMENT for table `expense_categories`
 --
 ALTER TABLE `expense_categories`
-  MODIFY `expense_category_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `expense_category_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT for table `incomes`
 --
 ALTER TABLE `incomes`
-  MODIFY `income_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `income_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `income_categories`
 --
 ALTER TABLE `income_categories`
-  MODIFY `income_category_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `income_category_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
 
 --
 -- AUTO_INCREMENT for table `journal_entries`
@@ -892,22 +896,13 @@ ALTER TABLE `suppliers`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=24;
+  MODIFY `user_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=28;
 
 --
 -- AUTO_INCREMENT for table `user_roles`
 --
 ALTER TABLE `user_roles`
   MODIFY `user_role_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
--- --------------------------------------------------------
-
---
--- Structure for view `employee_user_view`
---
-DROP TABLE IF EXISTS `employee_user_view`;
-
-CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `employee_user_view`  AS SELECT `e`.`employee_id` AS `employee_id`, `e`.`company_id` AS `company_id`, `e`.`user_id` AS `user_id`, `e`.`employee_name` AS `employee_name`, `e`.`phone` AS `phone`, `e`.`designation` AS `designation`, `e`.`joining_date` AS `joining_date`, `e`.`basic_salary` AS `basic_salary`, `e`.`status` AS `employee_status`, `u`.`name` AS `user_name`, `u`.`email` AS `email`, `u`.`status` AS `user_status` FROM (`employees` `e` left join `users` `u` on((`e`.`user_id` = `u`.`user_id`))) ;
 
 --
 -- Constraints for dumped tables
