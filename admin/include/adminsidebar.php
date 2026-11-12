@@ -66,6 +66,7 @@
       </a>
       <div class="collapse <?= in_array($current, ['chart_of_accounts.php', 'ledgers.php']) ? 'show' : '' ?>" id="sub5">
         <a class="nav-link ps-4 py-1 small rounded <?= $current == 'chart_of_accounts.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="chart_of_accounts.php" <?= $current == 'chart_of_accounts.php' ? 'aria-current="page"' : '' ?>>Chart of Accounts</a>
+        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'add_account.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="add_account.php" <?= $current == 'add_account.php' ? 'aria-current="page"' : '' ?>>Add Account</a>
         <a class="nav-link ps-4 py-1 small rounded <?= $current == 'ledgers.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="ledgers.php" <?= $current == 'ledgers.php' ? 'aria-current="page"' : '' ?>>Ledgers</a>
       </div>
 
