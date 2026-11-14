@@ -1,0 +1,344 @@
+.financial-report-page {
+  color: #17233c;
+  background:
+    radial-gradient(ellipse at 92% 10%, rgba(49, 89, 201, .045), transparent 28rem),
+    #f5f7fb;
+}
+
+.financial-report-page main > .p-3 {
+  padding-top: 1.5rem !important;
+}
+
+.financial-breadcrumb {
+  display: flex;
+  align-items: center;
+  min-height: 1.5rem;
+  color: #8a95a8;
+  font-size: .78rem;
+}
+
+.financial-breadcrumb a {
+  color: #68758b;
+}
+
+.financial-breadcrumb a:hover {
+  color: #3159c9;
+}
+
+.financial-breadcrumb i {
+  font-size: .6rem;
+}
+
+.financial-breadcrumb [aria-current="page"] {
+  color: #34425b;
+  font-weight: 600;
+}
+
+.financial-hero {
+  position: relative;
+  overflow: hidden;
+  min-height: 13rem;
+  display: flex;
+  align-items: center;
+  border: 1px solid rgba(255, 255, 255, .16);
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .18), transparent 25%),
+    linear-gradient(120deg, #173b8f, #3159c9 62%, #4777df);
+  box-shadow: 0 .75rem 2rem rgba(35, 67, 151, .16) !important;
+}
+
+.balance-hero {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .18), transparent 25%),
+    linear-gradient(120deg, #124d64, #147d89 58%, #2ca6a2);
+}
+
+.financial-hero h1 {
+  letter-spacing: -.035em;
+}
+
+.financial-hero p {
+  max-width: 34rem;
+  line-height: 1.65;
+}
+
+.financial-hero .badge {
+  border: 1px solid rgba(255, 255, 255, .2);
+}
+
+.financial-hero .form-control,
+.financial-hero .form-select {
+  min-height: 2.75rem;
+  min-width: 10.5rem;
+  border-color: rgba(255, 255, 255, .35);
+}
+
+.financial-hero .btn {
+  min-height: 2.75rem;
+  box-shadow: 0 .35rem 1rem rgba(15, 35, 83, .12);
+}
+
+.financial-preview-note {
+  border: 1px solid #dce8ff;
+  background: #eaf2ff;
+  color: #244cb0;
+  line-height: 1.5;
+}
+
+.financial-stat,
+.financial-panel {
+  border: 1px solid #e6ebf3;
+  box-shadow: 0 .25rem .75rem rgba(23, 35, 60, .035);
+}
+
+.financial-stat-icon {
+  display: inline-flex;
+  width: 2.75rem;
+  height: 2.75rem;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: .75rem;
+  font-size: 1.2rem;
+}
+
+.financial-panel {
+  border-radius: 1rem !important;
+}
+
+.financial-chart {
+  display: flex;
+  height: 17rem;
+  gap: .75rem;
+  padding-top: .5rem;
+}
+
+.financial-chart-scale {
+  display: flex;
+  flex: 0 0 2.25rem;
+  flex-direction: column;
+  justify-content: space-between;
+  padding-bottom: 1.7rem;
+  font-size: .68rem;
+}
+
+.financial-chart-plot {
+  position: relative;
+  flex: 1;
+  min-width: 0;
+}
+
+.financial-chart-grid {
+  position: absolute;
+  inset: 0 0 1.7rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.financial-chart-grid span {
+  border-top: 1px dashed #e6ebf3;
+}
+
+.financial-chart-columns {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  justify-content: space-around;
+  gap: .35rem;
+}
+
+.financial-chart-month {
+  display: flex;
+  width: 15%;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-end;
+  gap: .55rem;
+}
+
+.financial-bar-pair {
+  display: flex;
+  width: 100%;
+  height: calc(100% - 1.7rem);
+  align-items: flex-end;
+  justify-content: center;
+  gap: .22rem;
+}
+
+.financial-bar {
+  width: min(1.05rem, 38%);
+  min-height: .2rem;
+  border-radius: .35rem .35rem .1rem .1rem;
+}
+
+.revenue-bar {
+  background: linear-gradient(180deg, #6689e8, #3159c9);
+}
+
+.profit-bar {
+  background: linear-gradient(180deg, #65c49a, #198754);
+}
+
+.margin-ring {
+  display: grid;
+  width: 10.5rem;
+  height: 10.5rem;
+  place-items: center;
+  border-radius: 50%;
+  background: conic-gradient(#198754 0 42.2%, #e8edf4 42.2% 100%);
+}
+
+.margin-ring > div {
+  display: flex;
+  width: 7rem;
+  height: 7rem;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #fff;
+}
+
+.margin-ring strong {
+  font-size: 1.2rem;
+}
+
+.margin-ring span {
+  color: #68758b;
+  font-size: .72rem;
+}
+
+.financial-table thead th {
+  color: #68758b;
+  font-size: .72rem;
+  font-weight: 700;
+  letter-spacing: .045em;
+  text-transform: uppercase;
+}
+
+.financial-table td,
+.financial-table th {
+  color: #34425b;
+  font-size: .875rem;
+}
+
+.financial-table .statement-section th {
+  padding-top: .9rem;
+  color: #17233c;
+  font-weight: 700;
+}
+
+.financial-table .statement-subtotal th,
+.financial-table .statement-subtotal td {
+  background: #f8f9fc;
+  font-weight: 700;
+}
+
+.financial-table .statement-total th,
+.financial-table .statement-total td {
+  border-top: 2px solid #dfe5ef;
+  color: #145c3d;
+  font-size: .95rem;
+  font-weight: 800;
+}
+
+.balance-equation {
+  background: linear-gradient(135deg, #f8fbff, #f7fcfa);
+}
+
+.equation-block {
+  display: flex;
+  min-width: 10rem;
+  flex-direction: column;
+  align-items: center;
+  gap: .25rem;
+  padding: .6rem 1rem;
+}
+
+.equation-block strong {
+  color: #17233c;
+  font-size: clamp(1.2rem, 2vw, 1.7rem);
+}
+
+.equation-symbol {
+  color: #9aa5b5;
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.balance-account {
+  padding: .85rem 0;
+  border-bottom: 1px solid #edf0f5;
+  color: #34425b;
+  font-size: .875rem;
+}
+
+.balance-account:last-child {
+  border-bottom: 0;
+}
+
+.balance-account > div:first-child {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.balance-account strong {
+  color: #17233c;
+  white-space: nowrap;
+}
+
+.balance-account .progress {
+  height: .35rem;
+  background: #edf0f5;
+}
+
+.balance-account small {
+  display: block;
+  margin-top: .3rem;
+  font-size: .7rem;
+}
+
+.balance-check-note {
+  border: 1px solid #ccebdc;
+  background: #eaf7f0;
+  color: #17613e;
+}
+
+@media (max-width: 767.98px) {
+  .financial-report-page main > .p-3 {
+    padding-top: 1rem !important;
+  }
+
+  .financial-chart {
+    height: 14rem;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .financial-hero {
+    min-height: auto;
+    padding: 1.35rem !important;
+    border-radius: .9rem !important;
+  }
+
+  .financial-hero h1 {
+    font-size: 1.55rem;
+  }
+
+  .financial-hero .form-control,
+  .financial-hero .form-select,
+  .financial-hero .btn {
+    width: 100%;
+  }
+
+  .financial-chart {
+    height: 12rem;
+  }
+
+  .equation-block {
+    min-width: 0;
+  }
+}
+

@@ -1,0 +1,98 @@
+.commerce-page {
+  color: #17233c;
+}
+
+.commerce-hero {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .18), transparent 25%),
+    linear-gradient(120deg, #173b8f, #3159c9 62%, #4777df);
+}
+
+.sales-hero {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .17), transparent 25%),
+    linear-gradient(120deg, #16458d, #3159c9 58%, #567ce1);
+}
+
+.invoice-hero {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .18), transparent 25%),
+    linear-gradient(120deg, #53358d, #7654bd 58%, #9977d6);
+}
+
+.customer-hero {
+  background:
+    radial-gradient(circle at 88% 18%, rgba(255, 255, 255, .18), transparent 25%),
+    linear-gradient(120deg, #126454, #188976 58%, #35a88a);
+}
+
+.commerce-table thead th {
+  white-space: nowrap;
+}
+
+.commerce-table td {
+  white-space: nowrap;
+}
+
+.customer-cell {
+  display: inline-flex;
+  align-items: center;
+  gap: .65rem;
+}
+
+.customer-address {
+  min-width: 10rem;
+}
+
+.customer-avatar {
+  display: inline-flex;
+  width: 2.25rem;
+  height: 2.25rem;
+  align-items: center;
+  justify-content: center;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  font-size: .72rem;
+  font-weight: 700;
+}
+
+.commerce-form .form-label {
+  color: #34425b;
+  font-size: .82rem;
+  font-weight: 600;
+}
+
+.commerce-form .form-control,
+.commerce-form .form-select,
+.commerce-form .input-group-text {
+  min-height: 2.875rem;
+  border-color: #dfe5ef;
+  border-radius: .7rem;
+  font-size: .9rem;
+}
+
+.commerce-form .input-group-text {
+  color: #65728a;
+  background: #f7f9fc;
+}
+
+.commerce-form textarea.form-control {
+  min-height: auto;
+}
+
+.commerce-form .btn {
+  min-height: 2.7rem;
+  border-radius: .65rem;
+  font-size: .875rem;
+  font-weight: 600;
+}
+
+.invoice-quick-filters .btn {
+  font-size: .78rem;
+}
+
+@media (max-width: 575.98px) {
+  .commerce-page main > .p-3 {
+    padding-top: .875rem !important;
+  }
+}

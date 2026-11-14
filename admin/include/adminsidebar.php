@@ -46,9 +46,10 @@
       <a class="nav-link rounded d-flex align-items-center px-2 py-1 small text-white text-opacity-75" data-bs-toggle="collapse" href="#sub3">
         <i class="bi bi-cart-fill"></i>Sales &amp; Invoices<i class="bi bi-chevron-down ms-auto small"></i>
       </a>
-      <div class="collapse <?= in_array($current, ['invoices.php', 'customers.php']) ? 'show' : '' ?>" id="sub3">
-        <a class="nav-link ps-4 py-1 small rounded text-white text-opacity-75" href="invoices.php">Invoices</a>
-        <a class="nav-link ps-4 py-1 small rounded text-white text-opacity-75" href="customers.php">Customers</a>
+      <div class="collapse <?= in_array($current, ['sales.php', 'invoices.php', 'customers.php']) ? 'show' : '' ?>" id="sub3">
+        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'sales.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="sales.php" <?= $current == 'sales.php' ? 'aria-current="page"' : '' ?>>Sales</a>
+        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'invoices.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="invoices.php" <?= $current == 'invoices.php' ? 'aria-current="page"' : '' ?>>Invoices</a>
+        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'customers.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="customers.php" <?= $current == 'customers.php' ? 'aria-current="page"' : '' ?>>Customers</a>
       </div>
 
       <!-- Reports -->
@@ -56,8 +57,8 @@
         <i class="bi bi-bar-chart-fill"></i>Reports<i class="bi bi-chevron-down ms-auto small"></i>
       </a>
       <div class="collapse <?= in_array($current, ['profit_loss.php', 'balance_sheet.php']) ? 'show' : '' ?>" id="sub4">
-        <a class="nav-link ps-4 py-1 small rounded text-white text-opacity-75" href="profit_loss.php">Profit &amp; Loss</a>
-        <a class="nav-link ps-4 py-1 small rounded text-white text-opacity-75" href="balance_sheet.php">Balance Sheet</a>
+        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'profit_loss.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="profit_loss.php" <?= $current == 'profit_loss.php' ? 'aria-current="page"' : '' ?>>Profit &amp; Loss</a>
+        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'balance_sheet.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="balance_sheet.php" <?= $current == 'balance_sheet.php' ? 'aria-current="page"' : '' ?>>Balance Sheet</a>
       </div>
 
       <!-- Accounts -->
