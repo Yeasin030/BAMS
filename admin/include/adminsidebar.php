@@ -38,8 +38,8 @@
         <i class="bi bi-box-seam-fill"></i>Products &amp; Stock<i class="bi bi-chevron-down ms-auto small"></i>
       </a>
       <div class="collapse <?= in_array($current, ['products.php', 'stock.php']) ? 'show' : '' ?>" id="sub2">
-        <a class="nav-link ps-4 py-1 small rounded text-white text-opacity-75" href="products.php">Products</a>
-        <a class="nav-link ps-4 py-1 small rounded text-white text-opacity-75" href="stock.php">Stock Levels</a>
+        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'products.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="products.php" <?= $current == 'products.php' ? 'aria-current="page"' : '' ?>>Products</a>
+        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'stock.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="stock.php" <?= $current == 'stock.php' ? 'aria-current="page"' : '' ?>>Stock Levels</a>
       </div>
 
       <!-- Sales & Invoices -->
