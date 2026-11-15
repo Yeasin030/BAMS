@@ -60,6 +60,16 @@
   white-space: nowrap;
 }
 
+.account-page .account-table .account-group-row > * {
+  color: var(--glass-primary);
+  background: rgba(187, 225, 250, .07);
+  border-color: rgba(255, 255, 255, .1);
+}
+
+.account-page .account-table [hidden] {
+  display: none !important;
+}
+
 .account-table > :not(caption) > * > * {
   padding-top: .55rem;
   padding-bottom: .55rem;
@@ -77,6 +87,32 @@
 .account-toolbar .form-select {
   min-height: 2.4rem;
   font-size: .85rem;
+}
+
+.account-page .pagination .page-link {
+  color: var(--glass-primary);
+  background: rgba(255, 255, 255, .055);
+  border-color: rgba(255, 255, 255, .12);
+}
+
+.account-page .pagination .page-link:hover,
+.account-page .pagination .page-link:focus-visible {
+  color: #fff;
+  background: rgba(50, 130, 184, .24);
+  border-color: rgba(187, 225, 250, .28);
+}
+
+.account-page .pagination .page-item.active .page-link {
+  color: #fff;
+  background: #2875a6;
+  border-color: #2875a6;
+}
+
+.account-page .pagination .page-item.disabled .page-link,
+.account-page .pagination .page-link:disabled {
+  color: #8da3b0;
+  background: rgba(255, 255, 255, .035);
+  border-color: rgba(255, 255, 255, .08);
 }
 
 .account-type-icon {
