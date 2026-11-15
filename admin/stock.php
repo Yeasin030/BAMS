@@ -54,6 +54,7 @@ $movements = $conn -> query("SELECT m.*, p.product_name, p.product_code FROM sto
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="assets/css/dashboard-shared.css" rel="stylesheet">
     <link href="assets/css/inventory.css" rel="stylesheet">
+    <link href="assets/css/glassmorphism.css" rel="stylesheet">
 </head>
 
 <body class="bg-body-tertiary dashboard-page inventory-page">

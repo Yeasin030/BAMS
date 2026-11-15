@@ -11,9 +11,10 @@
         rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css"
         rel="stylesheet">
+    <link href="assets/css/glassmorphism.css" rel="stylesheet">
 </head>
 
-<body class="bg-body-tertiary">
+<body class="bg-body-tertiary clay-page">
     <main class="container min-vh-100 d-flex align-items-center justify-content-center py-4">
       <div class="card border-0 rounded-4 shadow-sm text-center w-100" style="max-width: 36rem">
         <div class="card-body p-4 p-md-5">

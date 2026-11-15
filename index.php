@@ -1,16 +1,71 @@
-<?php include_once ("admin/assets/db/bdconfig.php"); ?>
+<?php
+session_start();
+include_once("admin/assets/db/bdconfig.php");
+
+$login_error = '';
+
+if (isset($_POST['submit'])) {
+
+  $email = trim($_POST['email'] ?? '');
+  $password = sha1($_POST['password'] ?? '');
+
+  // Role comes from user_roles + roles (users table has no "role" column)
+  $stmt = $conn->prepare("SELECT u.user_id, u.company_id, u.name, r.role_name
+                          FROM users u
+                          LEFT JOIN user_roles ur ON ur.user_id = u.user_id
+                          LEFT JOIN roles r ON r.role_id = ur.role_id
+                          WHERE u.email = ? AND u.password = ?
+                          LIMIT 1");
+  $stmt->bind_param("ss", $email, $password);
+  $stmt->execute();
+  $result = $stmt->get_result();
+  $row = $result->fetch_assoc();
+
+  if ($row) {
+
+    $role = strtolower($row['role_name'] ?? 'employees');
+
+    // Custom roles (e.g. Manager) use the employees dashboard
+    if (!in_array($role, ['admin', 'accountant', 'employees'])) {
+      $role = 'employees';
+    }
+
+    session_regenerate_id(true);
+    $_SESSION['user_id'] = (int) $row['user_id'];
+    $_SESSION['company_id'] = (int) $row['company_id'];
+    $_SESSION['email'] = $email;
+    $_SESSION['name'] = $row['name'];
+    $_SESSION['role'] = $role;
+
+    if ($role == 'admin') {
+      $_SESSION['url'] = 'admin/dashboard_admin.php';
+    } elseif ($role == 'accountant') {
+      $_SESSION['url'] = 'admin/dashboard_account.php';
+    } else {
+      $_SESSION['url'] = 'admin/dashboard_employees.php';
+    }
+
+    header("Location: " . $_SESSION['url']);
+    exit;
+
+  } else {
+    $login_error = 'We could not sign you in. Check your email and password and try again.';
+  }
+}
+?>
 
 <!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#f8f9fa">
+  <meta name="theme-color" content="#0f4c75">
   <title>Sign in | BizLedger</title>
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <link href="admin/assets/css/glassmorphism.css" rel="stylesheet">
 </head>
-<body class="bg-body-tertiary">
+<body class="bg-body-tertiary clay-page clay-login">
   <main class="container min-vh-100 d-flex align-items-center justify-content-center py-4 py-lg-5">
     <div class="row justify-content-center w-100">
       <div class="col-12 col-xxl-10">
@@ -48,58 +103,28 @@
         <div class="w-100">
           <h2 class="h2 fw-bold mb-2" id="login-title">Welcome back</h2>
           <p class="text-secondary mb-4">Sign in to your account to continue.</p>
-          <?php
-              if (isset($_POST['submit'])) {
-                extract($_POST);
-                $password = sha1($password);
-                
-                //echo "SELECT * FROM users WHERE email = '$email' AND password = '$password'";
-                $result = $conn->query("SELECT * FROM users WHERE email = '$email' AND password = '$password'");
 
-                $row = $result->fetch_assoc();
-                
-
-                if ($result->num_rows > 0) {
-                  session_start();
-                  $_SESSION['email'] = $email;
-                  $_SESSION['name'] = $row['name'];
-                  $_SESSION['role'] = $row['role'];
-
-
-                  if ($row['role'] == 'admin') {
-                    $_SESSION['url'] = 'admin/dashboard_admin.php';
-                    header("Location: admin/dashboard_admin.php");
-                  } 
-                    else if ($row['role'] == 'accountant') {
-                    $_SESSION['url'] = 'admin/dashboard_account.php';
-                    header("Location: admin/dashboard_account.php");
-                  } else if ($row['role'] == 'employees') {
-                    $_SESSION['url'] = 'admin/dashboard_employees.php';
-                    header("Location: admin/dashboard_employees.php");
-                  }
-                } else {
-                  echo 'problem login';
-                }
-              }
-              ?>
+          <?php if ($login_error) { ?>
+            <div class="alert alert-danger d-flex align-items-center gap-2" role="alert"><i class="bi bi-exclamation-circle-fill" aria-hidden="true"></i><span><?= htmlspecialchars($login_error) ?></span></div>
+          <?php } ?>
 
           <form method="post">
             <div class="mb-3">
               <label class="form-label" for="email" >Email address</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                <input class="form-control" type="text" id="email" name="email" placeholder="you@company.com" value="admin@gmail.com" autocomplete="username" required>
+                <input class="form-control" type="email" id="email" name="email" placeholder="you@company.com" value="<?php echo htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" autocomplete="username" required>
               </div>
             </div>
 
             <div class="mb-3">
               <div class="d-flex align-items-center justify-content-between">
                 <label class="form-label" for="password">Password</label>
-                <a class="link-primary small text-decoration-none mb-2" href="#">Forgot password?</a>
+                <span class="small text-secondary mb-2">Need help? Contact your administrator.</span>
               </div>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                <input class="form-control" type="password" id="password" name="password" value="admin" placeholder="Enter your password" autocomplete="current-password" required>
+                <input class="form-control" type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
                 <button class="btn btn-outline-secondary" type="button" id="togglePassword" aria-label="Show password" aria-pressed="false">
                   <i class="bi bi-eye" aria-hidden="true"></i>
                 </button>
@@ -112,8 +137,6 @@
                 <label class="form-check-label small text-secondary" for="remember">Remember me</label>
               </div>
             </div>
-            
-          
 
             <button class="btn btn-primary w-100" type="submit" name="submit">Sign in <i class="bi bi-arrow-right ms-1"></i></button>
             <div class="text-center mt-4">
@@ -131,6 +154,19 @@
     </div>
   </main>
 
+  <script>
+    const passwordInput = document.getElementById('password');
+    const togglePassword = document.getElementById('togglePassword');
+    const togglePasswordIcon = togglePassword.querySelector('i');
 
+    togglePassword.addEventListener('click', function () {
+      const showPassword = passwordInput.type === 'password';
+      passwordInput.type = showPassword ? 'text' : 'password';
+      togglePassword.setAttribute('aria-pressed', String(showPassword));
+      togglePassword.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
+      togglePasswordIcon.classList.toggle('bi-eye', !showPassword);
+      togglePasswordIcon.classList.toggle('bi-eye-slash', showPassword);
+    });
+  </script>
 </body>
 </html>

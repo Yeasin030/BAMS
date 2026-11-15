@@ -32,6 +32,7 @@ if ($_SESSION['role'] != 'employees') {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <link href="assets/css/dashboard-shared.css" rel="stylesheet">
   <link href="assets/css/employee-dashboard.css" rel="stylesheet">
+  <link href="assets/css/glassmorphism.css" rel="stylesheet">
 
 </head>
 

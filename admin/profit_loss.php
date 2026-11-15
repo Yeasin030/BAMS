@@ -13,88 +13,89 @@ if (($_SESSION['role'] ?? '') != 'admin') {
 }
 
 $company_id = (int) ($_SESSION['company_id'] ?? 1);
-$error = '';
 
-if($_SERVER["REQUEST_METHOD"] == "POST"){
-
-    $sale_id = (int) $_POST['sale_id'];
-    $account_id = (int) $_POST['account_id'];
-    $amount = (float) $_POST['amount'];
-    $payment_date = $_POST['payment_date'];
-    $payment_method = $_POST['payment_method'];
-    $reference_number = $_POST['reference_number'];
-
-    $invoice = $conn -> query("SELECT s.sale_id, s.customer_id, s.total_amount,
-    COALESCE((SELECT SUM(pa.allocated_amount) FROM payment_allocations pa WHERE pa.invoice_type = 'SALE' AND pa.invoice_id = s.sale_id), 0) AS paid_amount
-    FROM sales s WHERE s.sale_id = '$sale_id' AND s.company_id = '$company_id'") -> fetch_assoc();
-
-    if(!$invoice){
-        $error = "Invoice not found.";
-    } elseif($amount <= 0){
-        $error = "Payment amount must be more than zero.";
-    } elseif($amount > ($invoice['total_amount'] - $invoice['paid_amount'])){
-        $error = "Payment amount cannot be more than the invoice balance.";
-    } else {
-
-        $customer_id = (int) $invoice['customer_id'];
-
-        $conn -> query("INSERT INTO payments (company_id, party_type, customer_id, account_id, payment_type, amount, payment_date, payment_method, reference_number)
-        VALUES ('$company_id', 'CUSTOMER', '$customer_id', '$account_id', 'RECEIPT', '$amount', '$payment_date', '$payment_method', '$reference_number')");
-
-        $payment_id = $conn -> insert_id;
-
-        if($payment_id){
-            $conn -> query("INSERT INTO payment_allocations (payment_id, invoice_type, invoice_id, allocated_amount)
-            VALUES ('$payment_id', 'SALE', '$sale_id', '$amount')");
-
-            $new_paid = $invoice['paid_amount'] + $amount;
-            if($new_paid >= $invoice['total_amount']){
-                $new_status = 'PAID';
-            } else {
-                $new_status = 'PARTIAL';
-            }
-
-            $conn -> query("UPDATE sales SET status = '$new_status' WHERE sale_id = '$sale_id' AND company_id = '$company_id'");
-
-            header('Location: ../admin/invoices.php');
-            exit;
-        }
-
-    }
-
+function pl_totals($conn, $company_id, $from, $to){
+    $r = [];
+    $r['sales'] = (float) $conn -> query("SELECT COALESCE(SUM(total_amount), 0) AS v FROM sales WHERE company_id = '$company_id' AND status <> 'CANCELLED' AND sale_date BETWEEN '$from' AND '$to'") -> fetch_assoc()['v'];
+    $r['other_income'] = (float) $conn -> query("SELECT COALESCE(SUM(amount), 0) AS v FROM incomes WHERE company_id = '$company_id' AND income_date BETWEEN '$from' AND '$to'") -> fetch_assoc()['v'];
+    $r['cogs'] = (float) $conn -> query("SELECT COALESCE(SUM(si.quantity * p.purchase_price), 0) AS v FROM sales_items si JOIN sales s ON s.sale_id = si.sale_id JOIN products p ON p.product_id = si.product_id WHERE s.company_id = '$company_id' AND s.status <> 'CANCELLED' AND s.sale_date BETWEEN '$from' AND '$to'") -> fetch_assoc()['v'];
+    $r['opex'] = (float) $conn -> query("SELECT COALESCE(SUM(amount), 0) AS v FROM expenses WHERE company_id = '$company_id' AND expense_date BETWEEN '$from' AND '$to'") -> fetch_assoc()['v'];
+    $r['revenue'] = $r['sales'] + $r['other_income'];
+    $r['gross'] = $r['revenue'] - $r['cogs'];
+    $r['net'] = $r['gross'] - $r['opex'];
+    return $r;
 }
 
-$invoice_result = $conn -> query("SELECT s.*, c.customer_name,
-COALESCE((SELECT SUM(pa.allocated_amount) FROM payment_allocations pa WHERE pa.invoice_type = 'SALE' AND pa.invoice_id = s.sale_id), 0) AS paid_amount
-FROM sales s LEFT JOIN customers c ON c.customer_id = s.customer_id
-WHERE s.company_id = '$company_id' ORDER BY s.sale_date DESC, s.sale_id DESC");
-
-$invoices = [];
-$total_count = 0;
-$paid_count = 0;
-$paid_amount_total = 0;
-$awaiting_count = 0;
-$awaiting_amount_total = 0;
-$draft_count = 0;
-$draft_amount_total = 0;
-
-while($row = $invoice_result -> fetch_assoc()){
-    $invoices[] = $row;
-    $total_count++;
-
-    if($row['status'] == 'PAID'){
-        $paid_count++;
-        $paid_amount_total += $row['total_amount'];
-    } elseif($row['status'] == 'POSTED' || $row['status'] == 'PARTIAL'){
-        $awaiting_count++;
-        $awaiting_amount_total += $row['total_amount'] - $row['paid_amount'];
-    } elseif($row['status'] == 'DRAFT'){
-        $draft_count++;
-        $draft_amount_total += $row['total_amount'];
+function short_money($v){
+    if($v >= 1000){
+        return '$' . round($v / 1000, 1) . 'k';
     }
+    return '$' . round($v);
 }
 
-$account_list = $conn -> query("SELECT account_id, account_code, account_name FROM accounts WHERE company_id = '$company_id' AND is_active = 1 ORDER BY account_name ASC");
+// Reporting period
+$period = $_GET['period'] ?? 'this_month';
+$today = date('Y-m-d');
+
+if($period == 'last_month'){
+    $from = date('Y-m-01', strtotime('first day of last month'));
+    $to = date('Y-m-t', strtotime('first day of last month'));
+    $period_label = date('F Y', strtotime($from));
+} elseif($period == 'quarter'){
+    $quarter = ceil(date('n') / 3);
+    $from = date('Y') . '-' . str_pad(($quarter - 1) * 3 + 1, 2, '0', STR_PAD_LEFT) . '-01';
+    $to = $today;
+    $period_label = 'Q' . $quarter . ' ' . date('Y');
+} elseif($period == 'ytd'){
+    $from = date('Y-01-01');
+    $to = $today;
+    $period_label = 'Year to date';
+} else {
+    $period = 'this_month';
+    $from = date('Y-m-01');
+    $to = $today;
+    $period_label = date('F 1', strtotime($from)) . '–' . date('j, Y', strtotime($to));
+}
+
+$pl_now = pl_totals($conn, $company_id, $from, $to);
+
+// Previous period of the same length
+$days = (int) ((strtotime($to) - strtotime($from)) / 86400) + 1;
+$prev_to = date('Y-m-d', strtotime($from . ' -1 day'));
+$prev_from = date('Y-m-d', strtotime($prev_to . ' -' . ($days - 1) . ' day'));
+$pl_prev = pl_totals($conn, $company_id, $prev_from, $prev_to);
+
+$revenue_change = $pl_prev['revenue'] > 0 ? (($pl_now['revenue'] - $pl_prev['revenue']) / $pl_prev['revenue']) * 100 : null;
+$gross_margin = $pl_now['revenue'] > 0 ? ($pl_now['gross'] / $pl_now['revenue']) * 100 : 0;
+$opex_percent = $pl_now['revenue'] > 0 ? ($pl_now['opex'] / $pl_now['revenue']) * 100 : 0;
+$net_margin = $pl_now['revenue'] > 0 ? ($pl_now['net'] / $pl_now['revenue']) * 100 : 0;
+$ring_percent = max(0, min(100, $net_margin));
+$total_expenses = $pl_now['cogs'] + $pl_now['opex'];
+
+// Operating expenses by category
+$expense_rows = $conn -> query("SELECT COALESCE(ec.category_name, 'Uncategorized') AS category_name, SUM(e.amount) AS total
+FROM expenses e LEFT JOIN expense_categories ec ON ec.expense_category_id = e.expense_category_id
+WHERE e.company_id = '$company_id' AND e.expense_date BETWEEN '$from' AND '$to'
+GROUP BY category_name ORDER BY total DESC");
+
+// Last six months trend
+$months = [];
+$chart_max = 0;
+for($i = 5; $i >= 0; $i--){
+    $month_start = strtotime(date('Y-m-01') . " -$i month");
+    $m = pl_totals($conn, $company_id, date('Y-m-01', $month_start), date('Y-m-t', $month_start));
+    $m['label'] = date('M', $month_start);
+    $months[] = $m;
+    if($m['revenue'] > $chart_max){
+        $chart_max = $m['revenue'];
+    }
+}
+if($chart_max <= 0){
+    $chart_max = 1000;
+}
+$step = pow(10, floor(log10($chart_max)));
+$chart_top = ceil($chart_max / $step) * $step;
+$trend_label = date('F', strtotime(date('Y-m-01') . ' -5 month')) . '–' . date('F Y');
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -102,15 +103,15 @@ $account_list = $conn -> query("SELECT account_id, account_code, account_name FR
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Invoices | BizLedger</title>
+    <title>Profit &amp; Loss | BizLedger</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="assets/css/dashboard-shared.css" rel="stylesheet">
-    <link href="assets/css/inventory.css" rel="stylesheet">
-    <link href="assets/css/sales-invoices.css" rel="stylesheet">
+    <link href="assets/css/financial-reports.css" rel="stylesheet">
+    <link href="assets/css/glassmorphism.css" rel="stylesheet">
 </head>
 
-<body class="bg-body-tertiary dashboard-page inventory-page commerce-page">
+<body class="bg-body-tertiary dashboard-page financial-report-page">
     <div class="container-fluid px-0">
         <div class="row min-vh-100">
             <div class="col-lg-3 col-xl-2 p-0 bg-dark">
@@ -119,157 +120,124 @@ $account_list = $conn -> query("SELECT account_id, account_code, account_name FR
             <main class="col-12 col-lg-9 col-xl-10 p-0">
                 <?php include 'include/adminheadbar.php'; ?>
                 <div class="p-3 p-md-4 p-xl-5">
-                    <nav class="inventory-breadcrumb mb-3" aria-label="Breadcrumb">
+                    <nav class="financial-breadcrumb mb-3" aria-label="Breadcrumb">
                         <a href="dashboard_admin.php" class="text-decoration-none">Dashboard</a>
                         <i class="bi bi-chevron-right mx-2" aria-hidden="true"></i>
-                        <a href="sales.php" class="text-decoration-none">Sales</a>
+                        <a href="profit_loss.php" class="text-decoration-none">Reports</a>
                         <i class="bi bi-chevron-right mx-2" aria-hidden="true"></i>
-                        <span aria-current="page">Invoices</span>
+                        <span aria-current="page">Profit &amp; Loss</span>
                     </nav>
 
-                    <?php if($error){ ?>
-                        <div class="alert alert-danger rounded-3 mb-4"><?= htmlspecialchars($error) ?></div>
-                    <?php } ?>
-
-                    <section class="inventory-hero commerce-hero invoice-hero rounded-4 shadow-sm text-white p-4 p-lg-5 mb-4">
-                        <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
+                    <section class="financial-hero profit-hero rounded-4 shadow-sm text-white p-4 p-lg-5 mb-4">
+                        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-4">
                             <div>
-                                <span class="badge rounded-pill bg-white bg-opacity-25 text-white px-3 py-2 mb-3"><i class="bi bi-file-earmark-text me-1" aria-hidden="true"></i> Billing workspace</span>
-                                <h1 class="h2 fw-bold mb-2">Invoices</h1>
-                                <p class="mb-0 text-white-50">Keep an eye on payments and outstanding balances.</p>
+                                <span class="badge rounded-pill bg-white bg-opacity-25 text-white px-3 py-2 mb-3"><i class="bi bi-graph-up-arrow me-1" aria-hidden="true"></i> Income statement</span>
+                                <h1 class="h2 fw-bold mb-2">Profit &amp; Loss</h1>
+                                <p class="mb-0 text-white-50">Understand how income and expenses shape your business performance.</p>
                             </div>
-                            <a class="btn btn-light text-primary fw-semibold px-3 py-2 text-nowrap" href="sales.php">
-                                <i class="bi bi-plus-lg me-1" aria-hidden="true"></i>Create invoice
-                            </a>
+                            <form method="get" class="d-flex flex-column flex-sm-row gap-2">
+                                <label class="visually-hidden" for="profitPeriod">Reporting period</label>
+                                <select class="form-select" id="profitPeriod" name="period" aria-label="Reporting period" onchange="this.form.submit()">
+                                    <option value="this_month" <?= $period == 'this_month' ? 'selected' : '' ?>><?= date('F 1', strtotime(date('Y-m-01'))) ?>–<?= date('j, Y') ?></option>
+                                    <option value="last_month" <?= $period == 'last_month' ? 'selected' : '' ?>><?= date('F Y', strtotime('first day of last month')) ?></option>
+                                    <option value="quarter" <?= $period == 'quarter' ? 'selected' : '' ?>>Q<?= ceil(date('n') / 3) ?> <?= date('Y') ?></option>
+                                    <option value="ytd" <?= $period == 'ytd' ? 'selected' : '' ?>>Year to date</option>
+                                </select>
+                                <button class="btn btn-light text-primary fw-semibold text-nowrap" type="button"><i class="bi bi-download me-1" aria-hidden="true"></i>Export</button>
+                            </form>
                         </div>
                     </section>
 
-                    <section class="row g-3 mb-4" aria-label="Invoice summary">
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <article class="card inventory-stat rounded-4 h-100"><div class="card-body d-flex align-items-center gap-3 p-4"><span class="inventory-stat-icon rounded-3 bg-primary-subtle text-primary"><i class="bi bi-files" aria-hidden="true"></i></span><div><div class="small text-secondary">Total invoices</div><div class="h4 fw-bold mb-0"><?= $total_count ?></div><div class="small text-secondary mt-1">All time</div></div></div></article>
-                        </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <article class="card inventory-stat rounded-4 h-100"><div class="card-body d-flex align-items-center gap-3 p-4"><span class="inventory-stat-icon rounded-3 bg-success-subtle text-success"><i class="bi bi-check-circle" aria-hidden="true"></i></span><div><div class="small text-secondary">Paid</div><div class="h4 fw-bold text-success mb-0">$<?= number_format($paid_amount_total, 2) ?></div><div class="small text-secondary mt-1"><?= $paid_count ?> invoices</div></div></div></article>
-                        </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <article class="card inventory-stat rounded-4 h-100"><div class="card-body d-flex align-items-center gap-3 p-4"><span class="inventory-stat-icon rounded-3 bg-warning-subtle text-warning-emphasis"><i class="bi bi-clock-history" aria-hidden="true"></i></span><div><div class="small text-secondary">Awaiting payment</div><div class="h4 fw-bold text-warning-emphasis mb-0">$<?= number_format($awaiting_amount_total, 2) ?></div><div class="small text-secondary mt-1"><?= $awaiting_count ?> invoices</div></div></div></article>
-                        </div>
-                        <div class="col-12 col-sm-6 col-xl-3">
-                            <article class="card inventory-stat rounded-4 h-100"><div class="card-body d-flex align-items-center gap-3 p-4"><span class="inventory-stat-icon rounded-3 bg-secondary-subtle text-secondary-emphasis"><i class="bi bi-pencil-square" aria-hidden="true"></i></span><div><div class="small text-secondary">Draft</div><div class="h4 fw-bold mb-0">$<?= number_format($draft_amount_total, 2) ?></div><div class="small text-secondary mt-1"><?= $draft_count ?> invoices</div></div></div></article>
-                        </div>
+                    <section class="row g-3 mb-4" aria-label="Profit and loss summary">
+                        <div class="col-12 col-sm-6 col-xl-3"><article class="card financial-stat rounded-4 h-100"><div class="card-body d-flex align-items-center gap-3 p-4"><span class="financial-stat-icon bg-success-subtle text-success"><i class="bi bi-arrow-down-left" aria-hidden="true"></i></span><div><div class="small text-secondary">Total revenue</div><div class="h4 fw-bold mb-0">$<?= number_format($pl_now['revenue'], 2) ?></div>
+                            <?php if($revenue_change === null){ ?>
+                                <div class="small text-secondary mt-1">No previous period data</div>
+                            <?php } elseif($revenue_change >= 0){ ?>
+                                <div class="small text-success mt-1"><i class="bi bi-arrow-up-right me-1" aria-hidden="true"></i><?= number_format($revenue_change, 1) ?>% vs previous period</div>
+                            <?php } else { ?>
+                                <div class="small text-danger mt-1"><i class="bi bi-arrow-down-right me-1" aria-hidden="true"></i><?= number_format(abs($revenue_change), 1) ?>% vs previous period</div>
+                            <?php } ?>
+                        </div></div></article></div>
+                        <div class="col-12 col-sm-6 col-xl-3"><article class="card financial-stat rounded-4 h-100"><div class="card-body d-flex align-items-center gap-3 p-4"><span class="financial-stat-icon bg-info-subtle text-info-emphasis"><i class="bi bi-box-seam" aria-hidden="true"></i></span><div><div class="small text-secondary">Gross profit</div><div class="h4 fw-bold mb-0">$<?= number_format($pl_now['gross'], 2) ?></div><div class="small text-secondary mt-1"><?= number_format($gross_margin, 1) ?>% gross margin</div></div></div></article></div>
+                        <div class="col-12 col-sm-6 col-xl-3"><article class="card financial-stat rounded-4 h-100"><div class="card-body d-flex align-items-center gap-3 p-4"><span class="financial-stat-icon bg-danger-subtle text-danger"><i class="bi bi-arrow-up-right" aria-hidden="true"></i></span><div><div class="small text-secondary">Operating expenses</div><div class="h4 fw-bold mb-0">$<?= number_format($pl_now['opex'], 2) ?></div><div class="small text-secondary mt-1"><?= number_format($opex_percent, 1) ?>% of revenue</div></div></div></article></div>
+                        <div class="col-12 col-sm-6 col-xl-3"><article class="card financial-stat rounded-4 h-100"><div class="card-body d-flex align-items-center gap-3 p-4"><span class="financial-stat-icon bg-primary-subtle text-primary"><i class="bi bi-trophy" aria-hidden="true"></i></span><div><div class="small text-secondary">Net profit</div><div class="h4 fw-bold <?= $pl_now['net'] >= 0 ? 'text-primary' : 'text-danger' ?> mb-0">$<?= number_format($pl_now['net'], 2) ?></div><div class="small <?= $net_margin >= 0 ? 'text-success' : 'text-danger' ?> mt-1"><?= number_format($net_margin, 1) ?>% net margin</div></div></div></article></div>
                     </section>
 
-                    <section class="card inventory-panel rounded-4 overflow-hidden" aria-labelledby="invoice-list-title">
-                        <div class="d-flex flex-column flex-xl-row justify-content-between align-items-xl-center gap-3 p-3 p-md-4 border-bottom">
-                            <div><h2 class="h5 fw-bold mb-1" id="invoice-list-title">Invoice register</h2><p class="small text-secondary mb-0">Search invoices and check each payment balance</p></div>
-                            <div class="d-flex flex-column flex-sm-row gap-2 inventory-filters">
-                                <label class="input-group"><span class="input-group-text bg-white"><i class="bi bi-search" aria-hidden="true"></i></span><input class="form-control" type="search" placeholder="Invoice or customer" aria-label="Search invoices"></label>
-                                <select class="form-select" aria-label="Filter invoices by status"><option selected>All statuses</option><option>Paid</option><option>Partial</option><option>Posted</option><option>Draft</option><option>Cancelled</option></select>
-                            </div>
+                    <div class="row g-4 align-items-stretch mb-4">
+                        <div class="col-12 col-xl-8">
+                            <section class="card financial-panel rounded-4 h-100" aria-labelledby="profit-trend-title">
+                                <div class="card-body p-4">
+                                    <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 mb-4">
+                                        <div><h2 class="h5 fw-bold mb-1" id="profit-trend-title">Revenue &amp; profit trend</h2><p class="small text-secondary mb-0">Monthly performance, <?= $trend_label ?></p></div>
+                                        <div class="d-flex gap-3 small"><span><i class="bi bi-circle-fill text-primary me-1" aria-hidden="true"></i>Revenue</span><span><i class="bi bi-circle-fill text-success me-1" aria-hidden="true"></i>Net profit</span></div>
+                                    </div>
+                                    <div class="financial-chart" role="img" aria-label="Monthly revenue and net profit bar chart">
+                                        <div class="financial-chart-scale small text-secondary"><span><?= short_money($chart_top) ?></span><span><?= short_money($chart_top * 0.75) ?></span><span><?= short_money($chart_top * 0.5) ?></span><span><?= short_money($chart_top * 0.25) ?></span><span>$0</span></div>
+                                        <div class="financial-chart-plot">
+                                            <div class="financial-chart-grid"><span></span><span></span><span></span><span></span><span></span></div>
+                                            <div class="financial-chart-columns">
+                                                <?php foreach($months as $m){
+                                                    $revenue_height = round(($m['revenue'] / $chart_top) * 100, 1);
+                                                    $profit_height = round((max(0, $m['net']) / $chart_top) * 100, 1);
+                                                ?>
+                                                <div class="financial-chart-month"><div class="financial-bar-pair"><span class="financial-bar revenue-bar" style="height: <?= $revenue_height ?>%"></span><span class="financial-bar profit-bar" style="height: <?= $profit_height ?>%"></span></div><span class="small text-secondary"><?= $m['label'] ?></span></div>
+                                                <?php } ?>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+                        </div>
+                        <div class="col-12 col-xl-4">
+                            <section class="card financial-panel h-100 rounded-4" aria-labelledby="margin-title">
+                                <div class="card-body p-4">
+                                    <h2 class="h5 fw-bold mb-1" id="margin-title">Profit margin</h2>
+                                    <p class="small text-secondary mb-4">Performance for this period</p>
+                                    <div class="margin-ring mx-auto mb-4" style="background: conic-gradient(#198754 <?= $ring_percent ?>%, #e9ecef 0);" role="img" aria-label="Net profit margin <?= number_format($net_margin, 1) ?> percent"><div><strong><?= number_format($net_margin, 1) ?>%</strong><span>Net margin</span></div></div>
+                                    <div class="d-flex justify-content-between small mb-2"><span class="text-secondary">Revenue</span><strong>$<?= number_format($pl_now['revenue'], 2) ?></strong></div>
+                                    <div class="d-flex justify-content-between small mb-2"><span class="text-secondary">Expenses</span><strong>$<?= number_format($total_expenses, 2) ?></strong></div>
+                                    <div class="d-flex justify-content-between small border-top pt-3 mt-3"><span class="fw-semibold">Net profit</span><strong class="<?= $pl_now['net'] >= 0 ? 'text-success' : 'text-danger' ?>">$<?= number_format($pl_now['net'], 2) ?></strong></div>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+
+                    <section class="card financial-panel rounded-4 overflow-hidden" aria-labelledby="statement-title">
+                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-sm-center gap-2 p-3 p-md-4 border-bottom">
+                            <div><h2 class="h5 fw-bold mb-1" id="statement-title">Profit &amp; Loss statement</h2><p class="small text-secondary mb-0">For <?= $period_label ?></p></div>
+                            <?php if($pl_now['net'] >= 0){ ?>
+                                <span class="badge rounded-pill bg-success-subtle text-success-emphasis px-3 py-2"><i class="bi bi-check-circle me-1" aria-hidden="true"></i>Net profit $<?= number_format($pl_now['net'], 2) ?></span>
+                            <?php } else { ?>
+                                <span class="badge rounded-pill bg-danger-subtle text-danger-emphasis px-3 py-2"><i class="bi bi-exclamation-circle me-1" aria-hidden="true"></i>Net loss $<?= number_format(abs($pl_now['net']), 2) ?></span>
+                            <?php } ?>
                         </div>
                         <div class="table-responsive">
-                            <table class="table table-hover align-middle inventory-table commerce-table invoice-table mb-0">
-                                <thead class="table-light">
-                                    <tr>
-                                        <th scope="col" class="ps-4 py-3">Invoice</th>
-                                        <th scope="col" class="py-3">Customer</th>
-                                        <th scope="col" class="py-3">Issue date</th>
-                                        <th scope="col" class="py-3 text-end">Total</th>
-                                        <th scope="col" class="py-3 text-end">Balance</th>
-                                        <th scope="col" class="py-3">Status</th>
-                                        <th scope="col" class="pe-4 py-3 text-end">Action</th>
-                                    </tr>
-                                </thead>
+                            <table class="table align-middle financial-table mb-0">
+                                <thead class="table-light"><tr><th scope="col" class="ps-4 py-3">Account</th><th scope="col" class="pe-4 py-3 text-end">Amount</th></tr></thead>
                                 <tbody>
-                                    <?php foreach($invoices as $row){
-                                        $balance = $row['total_amount'] - $row['paid_amount'];
-
-                                        if($row['status'] == 'PAID'){
-                                            $badge = 'bg-success-subtle text-success-emphasis'; $text = 'Paid'; $balance_class = 'text-success';
-                                        } elseif($row['status'] == 'PARTIAL'){
-                                            $badge = 'bg-warning-subtle text-warning-emphasis'; $text = 'Partial'; $balance_class = 'text-warning-emphasis';
-                                        } elseif($row['status'] == 'POSTED'){
-                                            $badge = 'bg-primary-subtle text-primary-emphasis'; $text = 'Posted'; $balance_class = 'text-danger';
-                                        } elseif($row['status'] == 'CANCEL'){
-                                            $badge = 'bg-danger-subtle text-danger-emphasis'; $text = 'Cancelled'; $balance_class = 'text-secondary';
-                                        } else {
-                                            $badge = 'bg-secondary-subtle text-secondary-emphasis'; $text = 'Draft'; $balance_class = 'text-secondary';
-                                        }
-                                    ?>
-                                    <tr>
-                                        <td class="ps-4"><div class="fw-semibold"><?= htmlspecialchars($row['invoice_number']) ?></div><div class="small text-secondary">Sale #<?= $row['sale_id'] ?></div></td>
-                                        <td><div class="customer-cell"><span class="customer-avatar bg-primary-subtle text-primary"><?= htmlspecialchars(strtoupper(substr($row['customer_name'] ?? '?', 0, 2))) ?></span><span class="fw-medium"><?= htmlspecialchars($row['customer_name'] ?? 'Unknown') ?></span></div></td>
-                                        <td class="text-secondary text-nowrap"><?= date('M d, Y', strtotime($row['sale_date'])) ?></td>
-                                        <td class="text-end fw-semibold">$<?= number_format($row['total_amount'], 2) ?></td>
-                                        <td class="text-end fw-semibold <?= $balance_class ?>">$<?= number_format($balance, 2) ?></td>
-                                        <td><span class="badge rounded-pill <?= $badge ?>"><?= $text ?></span></td>
-                                        <td class="pe-4 text-end">
-                                            <?php if(($row['status'] == 'POSTED' || $row['status'] == 'PARTIAL') && $balance > 0){ ?>
-                                                <button class="btn btn-sm btn-outline-primary text-nowrap receive-payment-btn" type="button" data-bs-toggle="modal" data-bs-target="#receivePaymentModal" data-sale-id="<?= $row['sale_id'] ?>" data-invoice="<?= htmlspecialchars($row['invoice_number']) ?>" data-balance="<?= number_format($balance, 2, '.', '') ?>">Receive payment</button>
-                                            <?php } ?>
-                                        </td>
-                                    </tr>
+                                    <tr class="statement-section"><th scope="row" class="ps-4">Revenue</th><td class="pe-4"></td></tr>
+                                    <tr><td class="ps-5">Sales revenue</td><td class="pe-4 text-end">$<?= number_format($pl_now['sales'], 2) ?></td></tr>
+                                    <tr><td class="ps-5">Other income</td><td class="pe-4 text-end">$<?= number_format($pl_now['other_income'], 2) ?></td></tr>
+                                    <tr class="statement-subtotal"><th scope="row" class="ps-4">Total revenue</th><td class="pe-4 text-end">$<?= number_format($pl_now['revenue'], 2) ?></td></tr>
+                                    <tr class="statement-section"><th scope="row" class="ps-4">Cost of goods sold</th><td class="pe-4"></td></tr>
+                                    <tr><td class="ps-5">Product costs</td><td class="pe-4 text-end">$<?= number_format($pl_now['cogs'], 2) ?></td></tr>
+                                    <tr class="statement-subtotal"><th scope="row" class="ps-4">Gross profit</th><td class="pe-4 text-end">$<?= number_format($pl_now['gross'], 2) ?></td></tr>
+                                    <tr class="statement-section"><th scope="row" class="ps-4">Operating expenses</th><td class="pe-4"></td></tr>
+                                    <?php while($e = $expense_rows -> fetch_assoc()){ ?>
+                                    <tr><td class="ps-5"><?= htmlspecialchars($e['category_name']) ?></td><td class="pe-4 text-end">$<?= number_format($e['total'], 2) ?></td></tr>
                                     <?php } ?>
+                                    <tr class="statement-subtotal"><th scope="row" class="ps-4">Total operating expenses</th><td class="pe-4 text-end">$<?= number_format($pl_now['opex'], 2) ?></td></tr>
+                                    <tr class="statement-total"><th scope="row" class="ps-4">Net profit</th><td class="pe-4 text-end">$<?= number_format($pl_now['net'], 2) ?></td></tr>
                                 </tbody>
                             </table>
                         </div>
-                        <div class="d-flex flex-column flex-sm-row justify-content-between align-items-center gap-3 p-3 p-md-4 border-top">
-                            <span class="small text-secondary">Showing <?= $total_count ?> invoices</span>
-                        </div>
+                        <div class="d-flex flex-column flex-sm-row justify-content-between gap-2 p-3 p-md-4 border-top small text-secondary"><span>All values shown in USD</span><span>Generated on <?= date('F j, Y') ?></span></div>
                     </section>
                 </div>
             </main>
         </div>
     </div>
-
-    <div class="modal fade" id="receivePaymentModal" tabindex="-1" aria-labelledby="receivePaymentModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content border-0 rounded-4 shadow">
-                <div class="modal-header border-bottom-0 px-4 pt-4"><div><h2 class="modal-title h5 fw-bold" id="receivePaymentModalLabel">Receive payment</h2><p class="small text-secondary mb-0">Record a payment received for this invoice.</p></div><button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button></div>
-                <div class="modal-body px-4 pb-4">
-                    <form class="commerce-form" method="post">
-                        <input type="hidden" name="sale_id" id="paymentSaleId">
-                        <div class="row g-3">
-                            <div class="col-sm-6"><label class="form-label" for="paymentInvoice">Invoice</label><input class="form-control" id="paymentInvoice" type="text" readonly></div>
-                            <div class="col-sm-6"><label class="form-label" for="paymentAmount">Amount</label><div class="input-group"><span class="input-group-text">$</span><input class="form-control" id="paymentAmount" name="amount" type="number" min="0.01" step="0.01" required></div><div class="form-text" id="paymentBalanceHelp"></div></div>
-                            <div class="col-sm-6"><label class="form-label" for="paymentDate">Payment date</label><input class="form-control" id="paymentDate" name="payment_date" type="date" value="<?= date('Y-m-d') ?>" required></div>
-                            <div class="col-sm-6"><label class="form-label" for="paymentMethod">Method</label>
-                                <select class="form-select" id="paymentMethod" name="payment_method" required>
-                                    <option value="Cash" selected>Cash</option>
-                                    <option value="Bank transfer">Bank transfer</option>
-                                    <option value="Card">Card</option>
-                                    <option value="Mobile banking">Mobile banking</option>
-                                    <option value="Other">Other</option>
-                                </select>
-                            </div>
-                            <div class="col-12"><label class="form-label" for="paymentAccount">Deposit to</label>
-                                <select class="form-select" id="paymentAccount" name="account_id" required>
-                                    <option value="" selected disabled>Select cash or bank account</option>
-                                    <?php while($a = $account_list -> fetch_assoc()){ ?>
-                                        <option value="<?= $a['account_id'] ?>"><?= htmlspecialchars($a['account_name']) ?> · <?= htmlspecialchars($a['account_code']) ?></option>
-                                    <?php } ?>
-                                </select>
-                            </div>
-                            <div class="col-12"><label class="form-label" for="paymentReference">Reference number <span class="text-secondary fw-normal">(optional)</span></label><input class="form-control" id="paymentReference" name="reference_number" type="text" maxlength="100" placeholder="e.g. transaction ID"></div>
-                        </div>
-                        <div class="d-flex justify-content-end gap-2 mt-4"><button class="btn btn-light" type="button" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" type="submit" name="submit"><i class="bi bi-check2 me-1" aria-hidden="true"></i>Save payment</button></div>
-                    </form>
-                </div>
-            </div>
-        </div>
-    </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.querySelectorAll('.receive-payment-btn').forEach(function (btn) {
-            btn.addEventListener('click', function () {
-                document.getElementById('paymentSaleId').value = btn.dataset.saleId;
-                document.getElementById('paymentInvoice').value = btn.dataset.invoice;
-                document.getElementById('paymentAmount').value = btn.dataset.balance;
-                document.getElementById('paymentAmount').max = btn.dataset.balance;
-                document.getElementById('paymentBalanceHelp').textContent = 'Balance due: $' + btn.dataset.balance;
-            });
-        });
-    </script>
 </body>
 
 </html>

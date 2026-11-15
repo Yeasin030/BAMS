@@ -50,6 +50,7 @@ FROM customers c WHERE c.company_id = '$company_id' ORDER BY c.customer_name ASC
     <link href="assets/css/dashboard-shared.css" rel="stylesheet">
     <link href="assets/css/inventory.css" rel="stylesheet">
     <link href="assets/css/sales-invoices.css" rel="stylesheet">
+    <link href="assets/css/glassmorphism.css" rel="stylesheet">
 </head>
 
 <body class="bg-body-tertiary dashboard-page inventory-page commerce-page">

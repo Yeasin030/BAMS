@@ -40,6 +40,7 @@ FROM sales WHERE company_id = '$company_id'")->fetch_assoc();
     <link href="assets/css/dashboard-shared.css" rel="stylesheet">
     <link href="assets/css/inventory.css" rel="stylesheet">
     <link href="assets/css/sales-invoices.css" rel="stylesheet">
+    <link href="assets/css/glassmorphism.css" rel="stylesheet">
 </head>
 
 <body class="bg-body-tertiary dashboard-page inventory-page commerce-page">

@@ -1,5 +1,8 @@
 <?php
 session_start();
+include_once 'assets/db/bdconfig.php';
+date_default_timezone_set('Asia/Dhaka');
+
 if (!isset($_SESSION['email'])) {
   header("Location: ../index.php");
   exit;
@@ -9,6 +12,142 @@ if ($_SESSION['role'] != 'admin') {
   header("Location: unauthorize.php");
   exit;
 }
+
+$company_id = (int) ($_SESSION['company_id'] ?? 1);
+
+function pl_totals($conn, $company_id, $from, $to)
+{
+  $r = [];
+  $r['sales'] = (float) $conn->query("SELECT COALESCE(SUM(total_amount), 0) AS v FROM sales WHERE company_id = '$company_id' AND status <> 'CANCELLED' AND sale_date BETWEEN '$from' AND '$to'")->fetch_assoc()['v'];
+  $r['other_income'] = (float) $conn->query("SELECT COALESCE(SUM(amount), 0) AS v FROM incomes WHERE company_id = '$company_id' AND income_date BETWEEN '$from' AND '$to'")->fetch_assoc()['v'];
+  $r['cogs'] = (float) $conn->query("SELECT COALESCE(SUM(si.quantity * p.purchase_price), 0) AS v FROM sales_items si JOIN sales s ON s.sale_id = si.sale_id JOIN products p ON p.product_id = si.product_id WHERE s.company_id = '$company_id' AND s.status <> 'CANCELLED' AND s.sale_date BETWEEN '$from' AND '$to'")->fetch_assoc()['v'];
+  $r['opex'] = (float) $conn->query("SELECT COALESCE(SUM(amount), 0) AS v FROM expenses WHERE company_id = '$company_id' AND expense_date BETWEEN '$from' AND '$to'")->fetch_assoc()['v'];
+  $r['revenue'] = $r['sales'] + $r['other_income'];
+  $r['expenses'] = $r['cogs'] + $r['opex'];
+  $r['net'] = $r['revenue'] - $r['expenses'];
+  return $r;
+}
+
+function money_value($conn, $sql)
+{
+  $row = $conn->query($sql)->fetch_assoc();
+  return (float) ($row['v'] ?? 0);
+}
+
+function bdt($n)
+{
+  $n = round($n);
+  $neg = $n < 0;
+  $s = (string) abs($n);
+  if (strlen($s) > 3) {
+    $last = substr($s, -3);
+    $rest = preg_replace('/\B(?=(\d{2})+(?!\d))/', ',', substr($s, 0, -3));
+    $s = $rest . ',' . $last;
+  }
+  return ($neg ? '-' : '') . '৳ ' . $s;
+}
+
+function change_note($cur, $prev, $higher_is_good = true)
+{
+  if ($prev <= 0) {
+    return 'No data for last month';
+  }
+  $pct = (($cur - $prev) / $prev) * 100;
+  $good = ($pct >= 0) == $higher_is_good;
+  $class = $good ? 'up' : 'down';
+  $icon = $pct >= 0 ? 'arrow-up-right' : 'arrow-down-right';
+  return '<span class="' . $class . '"><i class="bi bi-' . $icon . '"></i> ' . number_format(abs($pct), 1) . '%</span> vs last month';
+}
+
+// This month so far vs the same days last month
+$today = date('Y-m-d');
+$month_start = date('Y-m-01');
+$last_month_start = date('Y-m-01', strtotime('first day of last month'));
+$last_month_days = (int) date('t', strtotime($last_month_start));
+$last_month_end = date('Y-m-', strtotime($last_month_start)) . str_pad(min((int) date('j'), $last_month_days), 2, '0', STR_PAD_LEFT);
+
+$pl_now = pl_totals($conn, $company_id, $month_start, $today);
+$pl_prev = pl_totals($conn, $company_id, $last_month_start, $last_month_end);
+
+// Bank balance (cash and bank accounts, all time)
+$cash_accounts = "SELECT account_id FROM incomes WHERE company_id = '$company_id'
+UNION SELECT account_id FROM expenses WHERE company_id = '$company_id'
+UNION SELECT account_id FROM payments WHERE company_id = '$company_id'";
+$cash_account_count = (int) $conn->query("SELECT COUNT(*) AS v FROM ($cash_accounts) t")->fetch_assoc()['v'];
+$cash_opening = money_value($conn, "SELECT COALESCE(SUM(CASE WHEN opening_balance_side = 'DEBIT' THEN opening_balance ELSE -opening_balance END), 0) AS v FROM accounts WHERE company_id = '$company_id' AND account_id IN ($cash_accounts)");
+$cash_income = money_value($conn, "SELECT COALESCE(SUM(amount), 0) AS v FROM incomes WHERE company_id = '$company_id' AND income_date <= '$today'");
+$cash_expense = money_value($conn, "SELECT COALESCE(SUM(amount), 0) AS v FROM expenses WHERE company_id = '$company_id' AND expense_date <= '$today'");
+$cash_receipts = money_value($conn, "SELECT COALESCE(SUM(amount), 0) AS v FROM payments WHERE company_id = '$company_id' AND payment_type = 'RECEIPT' AND payment_date <= '$today'");
+$cash_payments = money_value($conn, "SELECT COALESCE(SUM(amount), 0) AS v FROM payments WHERE company_id = '$company_id' AND payment_type = 'PAYMENT' AND payment_date <= '$today'");
+$bank_balance = $cash_opening + $cash_income - $cash_expense + $cash_receipts - $cash_payments;
+
+// Last 12 months for the chart (shown in lakh)
+$chart_labels = [];
+$chart_income = [];
+$chart_expenses = [];
+for ($i = 11; $i >= 0; $i--) {
+  $ts = strtotime(date('Y-m-01') . " -$i month");
+  $m = pl_totals($conn, $company_id, date('Y-m-01', $ts), date('Y-m-t', $ts));
+  $chart_labels[] = date('M Y', $ts);
+  $chart_income[] = round($m['revenue'] / 100000, 2);
+  $chart_expenses[] = round($m['expenses'] / 100000, 2);
+}
+
+// Expense by category (this month)
+$colors = ['#4388ee', '#43c99b', '#ffa43b', '#9257ed', '#9aa7bd'];
+$category_rows = $conn->query("SELECT COALESCE(ec.category_name, 'Uncategorized') AS name, SUM(e.amount) AS total
+FROM expenses e LEFT JOIN expense_categories ec ON ec.expense_category_id = e.expense_category_id
+WHERE e.company_id = '$company_id' AND e.expense_date BETWEEN '$month_start' AND '$today'
+GROUP BY name ORDER BY total DESC");
+
+$categories = [];
+$category_total = 0;
+while ($c = $category_rows->fetch_assoc()) {
+  $categories[] = ['name' => $c['name'], 'total' => (float) $c['total']];
+  $category_total += (float) $c['total'];
+}
+if (count($categories) > 5) {
+  $other = 0;
+  foreach (array_slice($categories, 4) as $c) {
+    $other += $c['total'];
+  }
+  $categories = array_slice($categories, 0, 4);
+  $categories[] = ['name' => 'Other', 'total' => $other];
+}
+$donut_labels = [];
+$donut_data = [];
+$donut_colors = [];
+foreach ($categories as $i => $c) {
+  $donut_labels[] = $c['name'];
+  $donut_data[] = round($c['total'], 2);
+  $donut_colors[] = $colors[$i];
+}
+if (!$categories) {
+  $donut_labels = ['No expenses'];
+  $donut_data = [1];
+  $donut_colors = ['#e4eaf5'];
+}
+
+// Recent transactions
+$transactions = $conn->query("(SELECT i.income_date AS d, COALESCE(NULLIF(i.description, ''), ic.category_name) AS descr, 'Income' AS t, i.amount AS amt, 'Completed' AS st, i.created_at AS c
+FROM incomes i LEFT JOIN income_categories ic ON ic.income_category_id = i.income_category_id WHERE i.company_id = '$company_id')
+UNION ALL
+(SELECT e.expense_date, COALESCE(NULLIF(e.description, ''), ec.category_name), 'Expense', e.amount, 'Completed', e.created_at
+FROM expenses e LEFT JOIN expense_categories ec ON ec.expense_category_id = e.expense_category_id WHERE e.company_id = '$company_id')
+UNION ALL
+(SELECT s.sale_date, CONCAT('Sales Invoice ', s.invoice_number), 'Income', s.total_amount, s.status, s.created_at
+FROM sales s WHERE s.company_id = '$company_id' AND s.status NOT IN ('DRAFT', 'CANCELLED'))
+ORDER BY d DESC, c DESC LIMIT 5");
+
+$hour = (int) date('G');
+if ($hour < 12) {
+  $greeting = 'Good Morning';
+} elseif ($hour < 18) {
+  $greeting = 'Good Afternoon';
+} else {
+  $greeting = 'Good Evening';
+}
+$admin_name = $_SESSION['name'] ?? 'Admin';
 ?>
 
 <!DOCTYPE html>
@@ -21,6 +160,7 @@ if ($_SESSION['role'] != 'admin') {
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
   <link href="assets/css/dashboard-shared.css" rel="stylesheet">
+  <link href="assets/css/glassmorphism.css" rel="stylesheet">
   <style>
     :root {
       --blue: #246bfa;
@@ -413,12 +553,13 @@ if ($_SESSION['role'] != 'admin') {
       <main class="col-12 col-lg-9 col-xl-10 p-0">
         <?php include 'include/adminheadbar.php'; ?>
 
-        <<section class="welcome-row">
-          <div><span class="eyebrow">Welcome back!</span>
-            <h1>Good Morning, Admin!</h1>
-            <p>Here's what's happening with your business today.</p>
-          </div>
-          <button class="date-btn"><i class="bi bi-calendar3 me-2"></i>November 6, 2026 <i class="bi bi-chevron-down ms-2"></i></button>
+        <div class="dashboard-body">
+          <section class="welcome-row">
+            <div><span class="eyebrow">Welcome back!</span>
+              <h1><?= $greeting ?>, <?= htmlspecialchars($admin_name) ?>!</h1>
+              <p>Here's what's happening with your business today.</p>
+            </div>
+            <button class="date-btn"><i class="bi bi-calendar3 me-2"></i><?= date('F j, Y') ?></button>
           </section>
 
           <section class="row g-3 mb-3">
@@ -428,10 +569,10 @@ if ($_SESSION['role'] != 'admin') {
                   <div class="stat-icon blue"><i class="bi bi-bar-chart-fill"></i></div>
                   <div>
                     <div class="stat-label">Total Revenue</div>
-                    <div class="stat-value">৳ 8,45,250</div>
+                    <div class="stat-value"><?= bdt($pl_now['revenue']) ?></div>
                   </div>
                 </div>
-                <div class="stat-note"><span class="up"><i class="bi bi-arrow-up-right"></i> 12.8%</span> vs last month</div><svg class="stat-wave" viewBox="0 0 300 40" preserveAspectRatio="none">
+                <div class="stat-note"><?= change_note($pl_now['revenue'], $pl_prev['revenue']) ?></div><svg class="stat-wave" viewBox="0 0 300 40" preserveAspectRatio="none">
                   <path d="M0 27 C35 4 48 35 83 22 S130 8 160 25 S215 32 245 12 S275 30 300 8 V40 H0Z" fill="#2673fa" />
                 </svg>
               </article>
@@ -442,10 +583,10 @@ if ($_SESSION['role'] != 'admin') {
                   <div class="stat-icon green"><i class="bi bi-wallet2"></i></div>
                   <div>
                     <div class="stat-label">Total Expenses</div>
-                    <div class="stat-value">৳ 3,12,480</div>
+                    <div class="stat-value"><?= bdt($pl_now['expenses']) ?></div>
                   </div>
                 </div>
-                <div class="stat-note"><span class="down"><i class="bi bi-arrow-up-right"></i> 4.3%</span> vs last month</div><svg class="stat-wave" viewBox="0 0 300 40" preserveAspectRatio="none">
+                <div class="stat-note"><?= change_note($pl_now['expenses'], $pl_prev['expenses'], false) ?></div><svg class="stat-wave" viewBox="0 0 300 40" preserveAspectRatio="none">
                   <path d="M0 27 C35 4 48 35 83 22 S130 8 160 25 S215 32 245 12 S275 30 300 8 V40 H0Z" fill="#13b981" />
                 </svg>
               </article>
@@ -456,10 +597,10 @@ if ($_SESSION['role'] != 'admin') {
                   <div class="stat-icon purple"><i class="bi bi-graph-up-arrow"></i></div>
                   <div>
                     <div class="stat-label">Net Profit</div>
-                    <div class="stat-value">৳ 5,32,770</div>
+                    <div class="stat-value"><?= bdt($pl_now['net']) ?></div>
                   </div>
                 </div>
-                <div class="stat-note"><span class="up"><i class="bi bi-arrow-up-right"></i> 18.6%</span> vs last month</div><svg class="stat-wave" viewBox="0 0 300 40" preserveAspectRatio="none">
+                <div class="stat-note"><?= change_note($pl_now['net'], $pl_prev['net']) ?></div><svg class="stat-wave" viewBox="0 0 300 40" preserveAspectRatio="none">
                   <path d="M0 27 C35 4 48 35 83 22 S130 8 160 25 S215 32 245 12 S275 30 300 8 V40 H0Z" fill="#9b5cf6" />
                 </svg>
               </article>
@@ -470,10 +611,10 @@ if ($_SESSION['role'] != 'admin') {
                   <div class="stat-icon orange"><i class="bi bi-bank"></i></div>
                   <div>
                     <div class="stat-label">Bank Balance</div>
-                    <div class="stat-value">৳ 12,40,600</div>
+                    <div class="stat-value"><?= bdt($bank_balance) ?></div>
                   </div>
                 </div>
-                <div class="stat-note">Across 3 accounts</div><svg class="stat-wave" viewBox="0 0 300 40" preserveAspectRatio="none">
+                <div class="stat-note">Across <?= $cash_account_count ?> account<?= $cash_account_count == 1 ? '' : 's' ?></div><svg class="stat-wave" viewBox="0 0 300 40" preserveAspectRatio="none">
                   <path d="M0 27 C35 4 48 35 83 22 S130 8 160 25 S215 32 245 12 S275 30 300 8 V40 H0Z" fill="#f59e0b" />
                 </svg>
               </article>
@@ -485,7 +626,7 @@ if ($_SESSION['role'] != 'admin') {
               <article class="panel">
                 <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                   <h2 class="panel-title"><i class="bi bi-bar-chart-line-fill"></i>Financial Overview</h2>
-                  <div class="btn-group period-group" role="group"><button class="btn active">6 Months</button><button class="btn">1 Year</button><button class="btn">Custom</button></div>
+                  <div class="btn-group period-group" role="group"><button class="btn active" type="button" data-months="6">6 Months</button><button class="btn" type="button" data-months="12">1 Year</button></div>
                 </div>
                 <div class="chart-wrap"><canvas id="financialChart"></canvas></div>
               </article>
@@ -498,10 +639,13 @@ if ($_SESSION['role'] != 'admin') {
                     <div class="donut-wrap"><canvas id="expenseChart"></canvas></div>
                   </div>
                   <div class="col-6">
-                    <div class="expense-legend d-flex justify-content-between mb-3"><span><i class="legend-dot" style="background:#4388ee"></i>Salaries</span><b>35.5%</b></div>
-                    <div class="expense-legend d-flex justify-content-between mb-3"><span><i class="legend-dot" style="background:#43c99b"></i>Purchases</span><b>28.1%</b></div>
-                    <div class="expense-legend d-flex justify-content-between mb-3"><span><i class="legend-dot" style="background:#ffa43b"></i>Other Costs</span><b>21.4%</b></div>
-                    <div class="expense-legend d-flex justify-content-between"><span><i class="legend-dot" style="background:#9257ed"></i>Rent &amp; Bills</span><b>14.9%</b></div>
+                    <?php if ($categories) {
+                      foreach ($categories as $i => $c) { ?>
+                        <div class="expense-legend d-flex justify-content-between mb-3"><span><i class="legend-dot" style="background:<?= $colors[$i] ?>"></i><?= htmlspecialchars($c['name']) ?></span><b><?= number_format(($c['total'] / $category_total) * 100, 1) ?>%</b></div>
+                      <?php }
+                    } else { ?>
+                      <div class="expense-legend text-secondary">No expenses recorded this month.</div>
+                    <?php } ?>
                   </div>
                 </div>
               </article>
@@ -512,7 +656,7 @@ if ($_SESSION['role'] != 'admin') {
             <div class="col-12 col-xl-6">
               <article class="panel">
                 <div class="d-flex justify-content-between align-items-center mb-3">
-                  <h2 class="panel-title"><i class="bi bi-arrow-left-right"></i>Recent Transactions</h2><a href="#" class="text-primary text-decoration-none fw-semibold" style="font-size:11px">View All <i class="bi bi-arrow-right"></i></a>
+                  <h2 class="panel-title"><i class="bi bi-arrow-left-right"></i>Recent Transactions</h2><a href="invoices.php" class="text-primary text-decoration-none fw-semibold" style="font-size:11px">View All <i class="bi bi-arrow-right"></i></a>
                 </div>
                 <div class="table-responsive">
                   <table class="table">
@@ -526,34 +670,17 @@ if ($_SESSION['role'] != 'admin') {
                       </tr>
                     </thead>
                     <tbody>
-                      <tr>
-                        <td>Nov 6, 2026</td>
-                        <td>Product Purchase</td>
-                        <td><span class="type-badge type-expense">Expense</span></td>
-                        <td>৳ 45,000</td>
-                        <td><span class="status-badge">Completed</span></td>
-                      </tr>
-                      <tr>
-                        <td>Nov 6, 2026</td>
-                        <td>Sales Invoice #INV-1043</td>
-                        <td><span class="type-badge type-income">Income</span></td>
-                        <td>৳ 85,000</td>
-                        <td><span class="status-badge">Completed</span></td>
-                      </tr>
-                      <tr>
-                        <td>Nov 5, 2026</td>
-                        <td>Employee Salary</td>
-                        <td><span class="type-badge type-expense">Expense</span></td>
-                        <td>৳ 70,000</td>
-                        <td><span class="status-badge">Completed</span></td>
-                      </tr>
-                      <tr>
-                        <td>Nov 4, 2026</td>
-                        <td>Client Payment</td>
-                        <td><span class="type-badge type-income">Income</span></td>
-                        <td>৳ 1,20,000</td>
-                        <td><span class="status-badge">Completed</span></td>
-                      </tr>
+                      <?php while ($t = $transactions->fetch_assoc()) {
+                        $status_text = ucfirst(strtolower($t['st']));
+                      ?>
+                        <tr>
+                          <td><?= date('M j, Y', strtotime($t['d'])) ?></td>
+                          <td><?= htmlspecialchars($t['descr'] ?? '') ?></td>
+                          <td><span class="type-badge <?= $t['t'] == 'Income' ? 'type-income' : 'type-expense' ?>"><?= $t['t'] ?></span></td>
+                          <td><?= bdt($t['amt']) ?></td>
+                          <td><span class="status-badge"><?= $status_text ?></span></td>
+                        </tr>
+                      <?php } ?>
                     </tbody>
                   </table>
                 </div>
@@ -563,10 +690,10 @@ if ($_SESSION['role'] != 'admin') {
               <article class="panel">
                 <h2 class="panel-title mb-3"><i class="bi bi-lightning-charge-fill"></i>Quick Actions</h2>
                 <div class="row g-2">
-                  <div class="col-6"><a href="#" class="quick-action quick-blue"><i class="bi bi-arrow-left-right"></i>Add Transaction</a></div>
-                  <div class="col-6"><a href="#" class="quick-action quick-green"><i class="bi bi-file-earmark-bar-graph"></i>Generate Report</a></div>
+                  <div class="col-6"><a href="sales.php" class="quick-action quick-blue"><i class="bi bi-arrow-left-right"></i>Add Transaction</a></div>
+                  <div class="col-6"><a href="profit_loss.php" class="quick-action quick-green"><i class="bi bi-file-earmark-bar-graph"></i>Generate Report</a></div>
                   <div class="col-6"><a href="./employlist.php" class="quick-action quick-purple"><i class="bi bi-people"></i>Manage Users</a></div>
-                  <div class="col-6"><a href="#" class="quick-action quick-orange"><i class="bi bi-box-seam"></i>Manage Products</a></div>
+                  <div class="col-6"><a href="products.php" class="quick-action quick-orange"><i class="bi bi-box-seam"></i>Manage Products</a></div>
                 </div>
               </article>
             </div>
@@ -574,20 +701,26 @@ if ($_SESSION['role'] != 'admin') {
               <article class="promo-card">
                 <div class="promo-art"><i class="bi bi-graph-up-arrow"></i> <i class="bi bi-calculator"></i></div>
                 <h3>Grow Your Business</h3>
-                <p>With BizLedger, manage your accounts smarter and easier.</p><a href="#" class="btn">View Reports <i class="bi bi-arrow-right ms-1"></i></a>
+                <p>With BizLedger, manage your accounts smarter and easier.</p><a href="profit_loss.php" class="btn">View Reports <i class="bi bi-arrow-right ms-1"></i></a>
               </article>
             </div>
           </section>
+        </div>
       </main>
+      <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
       <script>
+        const allLabels = <?= json_encode($chart_labels) ?>;
+        const allIncome = <?= json_encode($chart_income) ?>;
+        const allExpenses = <?= json_encode($chart_expenses) ?>;
+
         const financialCtx = document.getElementById('financialChart');
-        new Chart(financialCtx, {
+        const financialChart = new Chart(financialCtx, {
           type: 'line',
           data: {
-            labels: ['Jun 2026', 'Jul 2026', 'Aug 2026', 'Sep 2026', 'Oct 2026', 'Nov 2026'],
+            labels: allLabels.slice(-6),
             datasets: [{
               label: 'Income',
-              data: [6, 7.6, 7.4, 8.1, 8.7, 9.2],
+              data: allIncome.slice(-6),
               borderColor: '#2673fa',
               backgroundColor: 'rgba(38,115,250,.10)',
               fill: true,
@@ -596,7 +729,7 @@ if ($_SESSION['role'] != 'admin') {
               borderWidth: 2
             }, {
               label: 'Expenses',
-              data: [2.6, 3.8, 4, 5.1, 5.3, 4.9],
+              data: allExpenses.slice(-6),
               borderColor: '#ff922e',
               backgroundColor: 'rgba(255,146,46,.08)',
               fill: true,
@@ -646,14 +779,27 @@ if ($_SESSION['role'] != 'admin') {
             }
           }
         });
+
+        document.querySelectorAll('.period-group .btn').forEach(function (btn) {
+          btn.addEventListener('click', function () {
+            const months = parseInt(btn.dataset.months);
+            document.querySelectorAll('.period-group .btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            financialChart.data.labels = allLabels.slice(-months);
+            financialChart.data.datasets[0].data = allIncome.slice(-months);
+            financialChart.data.datasets[1].data = allExpenses.slice(-months);
+            financialChart.update();
+          });
+        });
+
         const expenseCtx = document.getElementById('expenseChart');
         new Chart(expenseCtx, {
           type: 'doughnut',
           data: {
-            labels: ['Salaries', 'Purchases', 'Other Costs', 'Rent & Bills'],
+            labels: <?= json_encode($donut_labels) ?>,
             datasets: [{
-              data: [35.5, 28.1, 21.4, 14.9],
-              backgroundColor: ['#4388ee', '#43c99b', '#ffa43b', '#9257ed'],
+              data: <?= json_encode($donut_data) ?>,
+              backgroundColor: <?= json_encode($donut_colors) ?>,
               borderWidth: 0,
               hoverOffset: 4
             }]
@@ -673,7 +819,6 @@ if ($_SESSION['role'] != 'admin') {
     </div>
   </div>
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
   <script src="assets/js/adminscript.js"></script>
 </body>
 

@@ -46,7 +46,7 @@ $cash_bank = $cash_opening + $cash_income - $cash_expense + $cash_receipts - $ca
 
 // Assets: accounts receivable (unpaid sales)
 $receivable = money_value($conn, "SELECT COALESCE(SUM(s.total_amount - COALESCE((SELECT SUM(pa.allocated_amount) FROM payment_allocations pa JOIN payments p ON p.payment_id = pa.payment_id WHERE pa.invoice_type = 'SALE' AND pa.invoice_id = s.sale_id AND p.payment_date <= '$date'), 0)), 0) AS v
-FROM sales s WHERE s.company_id = '$company_id' AND s.status NOT IN ('DRAFT', 'CANCEL') AND s.sale_date <= '$date'");
+FROM sales s WHERE s.company_id = '$company_id' AND s.status NOT IN ('DRAFT', 'CANCELLED') AND s.sale_date <= '$date'");
 
 // Assets: inventory (current stock at purchase price)
 $inventory = money_value($conn, "SELECT COALESCE(SUM(current_stock * purchase_price), 0) AS v FROM products WHERE company_id = '$company_id'");
@@ -55,15 +55,15 @@ $total_assets = $cash_bank + $receivable + $inventory;
 
 // Liabilities: accounts payable (unpaid purchases)
 $payable = money_value($conn, "SELECT COALESCE(SUM(pu.total_amount - COALESCE((SELECT SUM(pa.allocated_amount) FROM payment_allocations pa JOIN payments p ON p.payment_id = pa.payment_id WHERE pa.invoice_type = 'PURCHASE' AND pa.invoice_id = pu.purchase_id AND p.payment_date <= '$date'), 0)), 0) AS v
-FROM purchases pu WHERE pu.company_id = '$company_id' AND pu.status NOT IN ('DRAFT', 'CANCEL') AND pu.purchase_date <= '$date'");
+FROM purchases pu WHERE pu.company_id = '$company_id' AND pu.status NOT IN ('DRAFT', 'CANCELLED') AND pu.purchase_date <= '$date'");
 
 $total_liabilities = $payable;
 
 // Equity
 $owner_capital = money_value($conn, "SELECT COALESCE(SUM(CASE WHEN opening_balance_side = 'CREDIT' THEN opening_balance ELSE -opening_balance END), 0) AS v FROM accounts WHERE company_id = '$company_id' AND account_categorie = 'EQUITY'");
 
-$sales_revenue = money_value($conn, "SELECT COALESCE(SUM(total_amount), 0) AS v FROM sales WHERE company_id = '$company_id' AND status <> 'CANCEL' AND sale_date <= '$date'");
-$cogs = money_value($conn, "SELECT COALESCE(SUM(si.quantity * p.purchase_price), 0) AS v FROM sales_items si JOIN sales s ON s.sale_id = si.sale_id JOIN products p ON p.product_id = si.product_id WHERE s.company_id = '$company_id' AND s.status <> 'CANCEL' AND s.sale_date <= '$date'");
+$sales_revenue = money_value($conn, "SELECT COALESCE(SUM(total_amount), 0) AS v FROM sales WHERE company_id = '$company_id' AND status <> 'CANCELLED' AND sale_date <= '$date'");
+$cogs = money_value($conn, "SELECT COALESCE(SUM(si.quantity * p.purchase_price), 0) AS v FROM sales_items si JOIN sales s ON s.sale_id = si.sale_id JOIN products p ON p.product_id = si.product_id WHERE s.company_id = '$company_id' AND s.status <> 'CANCELLED' AND s.sale_date <= '$date'");
 $retained_earnings = $sales_revenue + $cash_income - $cogs - $cash_expense;
 
 $total_equity = $total_assets - $total_liabilities;
@@ -83,6 +83,7 @@ $total_liabilities_equity = $total_liabilities + $total_equity;
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet">
     <link href="assets/css/dashboard-shared.css" rel="stylesheet">
     <link href="assets/css/financial-reports.css" rel="stylesheet">
+    <link href="assets/css/glassmorphism.css" rel="stylesheet">
 </head>
 
 <body class="bg-body-tertiary dashboard-page financial-report-page">
