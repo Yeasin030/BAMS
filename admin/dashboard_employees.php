@@ -84,19 +84,19 @@ if ($_SESSION['role'] != 'employees') {
 
                       <div class="detail-row">
                         <i class="bi bi-person-badge"></i><span>Employee ID</span>
-                        <span class="value"><?php echo "EMP-" . htmlspecialchars($employee['employee_id'] ?? '-') ?></span>
+                        <span class="value"><?php echo "EMP-" . $employee['employee_id'] ?></span>
                       </div>
                       <div class="detail-row">
                         <i class="bi bi-building"></i><span>Department</span>
-                        <span class="value"><?php echo  htmlspecialchars($employee['department'] ?? '-') ?></span>
+                        <span class="value"><?php echo  $employee['department'] ?></span>
                       </div>
                       <div class="detail-row">
                         <i class="bi bi-person-workspace"></i><span>Designation</span>
-                        <span class="value"><?php echo htmlspecialchars($employee['designation'] ?? '-') ?></span>
+                        <span class="value"><?php echo $employee['designation'] ?? '-' ?></span>
                       </div>
                       <div class="detail-row email-detail-row">
                         <i class="bi bi-envelope"></i><span>Email</span>
-                        <span class="value"><?php echo  htmlspecialchars($employee['login_email'] ?? '-') ?></span>
+                        <span class="value"><?php echo  $employee['login_email'] ?? '-' ?></span>
                       </div>
                     </div>
 
@@ -107,7 +107,7 @@ if ($_SESSION['role'] != 'employees') {
                           <div class="info-icon tone-blue"><i class="bi bi-calendar-check-fill"></i></div>
                           <div>
                             <div class="info-label">Join Date</div>
-                            <div class="info-value">Jan 15, 2024</div>
+                            <div class="info-value"><?php echo $employee['joining_date']?></div>
                           </div>
                         </div>
                         <div class="info-tile">

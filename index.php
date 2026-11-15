@@ -113,7 +113,7 @@ if (isset($_POST['submit'])) {
               <label class="form-label" for="email" >Email address</label>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-envelope"></i></span>
-                <input class="form-control" type="email" id="email" name="email" placeholder="you@company.com" value="<?php echo htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" autocomplete="username" required>
+                <input class="form-control" type="email" id="email" name="email" value="admin@gmail.com" placeholder="you@company.com" value="<?php echo htmlspecialchars($_POST['email'] ?? '', ENT_QUOTES, 'UTF-8'); ?>" autocomplete="username" required>
               </div>
             </div>
 
@@ -124,7 +124,7 @@ if (isset($_POST['submit'])) {
               </div>
               <div class="input-group">
                 <span class="input-group-text"><i class="bi bi-lock"></i></span>
-                <input class="form-control" type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+                <input class="form-control" type="password" id="password" name="password" placeholder="Enter your password" value="admin" autocomplete="current-password" required>
                 <button class="btn btn-outline-secondary" type="button" id="togglePassword" aria-label="Show password" aria-pressed="false">
                   <i class="bi bi-eye" aria-hidden="true"></i>
                 </button>
