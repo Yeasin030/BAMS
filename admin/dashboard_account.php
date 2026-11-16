@@ -42,7 +42,7 @@
       <div class="dashboard-hero-content d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
         <div>
           <span class="badge rounded-pill bg-white bg-opacity-25 text-white px-3 py-2 mb-3"><i class="bi bi-calculator me-1" aria-hidden="true"></i> Accounting overview</span>
-          <h1 class="h2 fw-bold mb-2">Welcome back, <?= htmlspecialchars($_SESSION['name'] ?? 'Accountant') ?>!</h1>
+          <h1 class="h2 fw-bold mb-2">Welcome back, <?= $_SESSION['name'] ?>!</h1>
           <p class="mb-0 text-white-50">Your financial activity and account performance at a glance.</p>
         </div>
         <span class="badge rounded-pill bg-white bg-opacity-10 border border-white border-opacity-25 text-white px-3 py-2"><i class="bi bi-calendar3 me-2" aria-hidden="true"></i>This month</span>

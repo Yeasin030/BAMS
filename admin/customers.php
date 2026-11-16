@@ -125,8 +125,8 @@ FROM customers c WHERE c.company_id = '$company_id' ORDER BY c.customer_name ASC
                                     <?php while($row = $customers -> fetch_assoc()){ ?>
                                     <tr>
                                         <td class="ps-4"><div class="customer-cell"><span class="customer-avatar bg-primary-subtle text-primary"><?= htmlspecialchars(strtoupper(substr($row['customer_name'], 0, 2))) ?></span><div><div class="fw-semibold"><?= htmlspecialchars($row['customer_name']) ?></div><div class="small text-secondary"><?= htmlspecialchars($row['email'] ?? '') ?></div></div></div></td>
-                                        <td class="text-secondary text-nowrap"><?= htmlspecialchars($row['phone'] ?? '') ?></td>
-                                        <td class="text-secondary customer-address"><?= htmlspecialchars($row['address'] ?? '') ?></td>
+                                        <td class="text-secondary text-nowrap"><?= $row['phone']  ?></td>
+                                        <td class="text-secondary customer-address"><?= $row['address']  ?></td>
                                         <td class="text-center"><?= $row['orders'] ?></td>
                                         <td class="text-end fw-semibold">$<?= number_format($row['lifetime_value'], 2) ?></td>
                                         <td class="text-secondary text-nowrap"><?= $row['last_order'] ? date('M d, Y', strtotime($row['last_order'])) : '-' ?></td>

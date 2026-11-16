@@ -7,7 +7,7 @@ if (!isset($_SESSION['email'])) {
     exit;
 }
 
-if (($_SESSION['role'] ?? '') != 'admin') {
+if (!in_array($_SESSION['role'] ?? '', ['admin', 'accountant'], true)) {
     header("Location: unauthorize.php");
     exit;
 }
@@ -52,10 +52,10 @@ foreach ($rows as $row) {
     <div class="container-fluid px-0">
         <div class="row min-vh-100">
             <div class="col-lg-3 col-xl-2 p-0 bg-dark">
-                <?php include 'include/adminsidebar.php'; ?>
+                <?php if (($_SESSION['role'] ?? '') === 'accountant') { include 'include/accountendsidebar.php'; } else { include 'include/adminsidebar.php'; } ?>
             </div>
             <main class="col-12 col-lg-9 col-xl-10 p-0">
-                <?php include 'include/adminheadbar.php'; ?>
+                <?php if (($_SESSION['role'] ?? '') === 'accountant') { include 'include/accountendheadbar.php'; } else { include 'include/adminheadbar.php'; } ?>
                 <div class="p-3 p-md-4 p-xl-5">
                     <section class="account-hero rounded-4 shadow-sm text-white p-4 p-lg-5 mb-4">
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
@@ -163,17 +163,17 @@ foreach ($rows as $row) {
                                             if ($cat != $current):
                                                 $current = $cat;
                                         ?>
-                                                <tr class="account-group-row" data-account-group="<?php echo htmlspecialchars($cat, ENT_QUOTES, 'UTF-8'); ?>">
-                                                    <td class="ps-4 py-3" colspan="5"><span class="account-type-icon d-inline-flex align-items-center justify-content-center rounded-3 bg-<?php echo $m[3]; ?>-subtle text-<?php echo $m[3]; ?> me-2"><i class="bi <?php echo $m[2]; ?>" aria-hidden="true"></i></span><span class="fw-bold"><?php echo htmlspecialchars($m[0], ENT_QUOTES, 'UTF-8'); ?></span><span class="small text-secondary ms-2"><?php echo $counts[$cat] ?? 0; ?> accounts</span></td>
+                                                <tr class="account-group-row" data-account-group="<?php echo $cat; ?>">
+                                                    <td class="ps-4 py-3" colspan="5"><span class="account-type-icon d-inline-flex align-items-center justify-content-center rounded-3 bg-<?php echo $m[3]; ?>-subtle text-<?php echo $m[3]; ?> me-2"><i class="bi <?php echo $m[2]; ?>" aria-hidden="true"></i></span><span class="fw-bold"><?php echo $m[0]; ?></span><span class="small text-secondary ms-2"><?php echo $counts[$cat] ?? 0; ?> accounts</span></td>
                                                 </tr>
                                             <?php endif; ?>
-                                            <tr data-account-row data-account-category="<?php echo htmlspecialchars($cat, ENT_QUOTES, 'UTF-8'); ?>" data-account-search="<?php echo htmlspecialchars(strtolower(implode(' ', [$row['account_code'], $row['account_name'], $m[0], $m[1], $row['is_active'] ? 'active' : 'inactive'])), ENT_QUOTES, 'UTF-8'); ?>">
+                                            <tr data-account-row data-account-category="<?php echo $cat ; ?>" data-account-search="<?php echo strtolower(implode(' ', [$row['account_code'], $row['account_name'], $m[0], $m[1], $row['is_active'] ? 'active' : 'inactive'])); ?>">
                                                 <?php if ($row['parent_account_id'] !== null): ?>
-                                                    <td class="account-child py-3"><span class="text-secondary me-2" aria-hidden="true">↳</span><span class="fw-semibold"><?php echo htmlspecialchars($row['account_code'] . ' · ' . $row['account_name']); ?></span></td>
+                                                    <td class="account-child py-3"><span class="text-secondary me-2" aria-hidden="true">↳</span><span class="fw-semibold"><?php echo $row['account_code'] . ' · ' . $row['account_name']; ?></span></td>
                                                 <?php else: ?>
-                                                    <td class="ps-4 py-3"><span class="fw-semibold"><?php echo htmlspecialchars($row['account_code'] . ' · ' . $row['account_name']); ?></span></td>
+                                                    <td class="ps-4 py-3"><span class="fw-semibold"><?php echo $row['account_code'] . ' · ' . $row['account_name']; ?></span></td>
                                                 <?php endif; ?>
-                                                <td><span class="badge rounded-pill bg-<?php echo $m[3]; ?>-subtle text-<?php echo $m[3]; ?>-emphasis"><?php echo htmlspecialchars($m[1], ENT_QUOTES, 'UTF-8'); ?></span></td>
+                                                <td><span class="badge rounded-pill bg-<?php echo $m[3]; ?>-subtle text-<?php echo $m[3]; ?>-emphasis"><?php echo $m[1]; ?></span></td>
                                                 <td class="text-end fw-semibold">$<?php echo number_format($row['opening_balance'], 2); ?></td>
                                                 <td>
                                                     <?php if ($row['is_active']): ?>

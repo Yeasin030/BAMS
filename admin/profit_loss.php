@@ -7,7 +7,7 @@ if (!isset($_SESSION['email'])) {
     exit;
 }
 
-if (($_SESSION['role'] ?? '') != 'admin') {
+if (!in_array($_SESSION['role'] ?? '', ['admin', 'accountant'], true)) {
     header("Location: unauthorize.php");
     exit;
 }
@@ -115,10 +115,10 @@ $trend_label = date('F', strtotime(date('Y-m-01') . ' -5 month')) . '–' . date
     <div class="container-fluid px-0">
         <div class="row min-vh-100">
             <div class="col-lg-3 col-xl-2 p-0 bg-dark">
-                <?php include 'include/adminsidebar.php'; ?>
+                <?php if (($_SESSION['role'] ?? '') === 'accountant') { include 'include/accountendsidebar.php'; } else { include 'include/adminsidebar.php'; } ?>
             </div>
             <main class="col-12 col-lg-9 col-xl-10 p-0">
-                <?php include 'include/adminheadbar.php'; ?>
+                <?php if (($_SESSION['role'] ?? '') === 'accountant') { include 'include/accountendheadbar.php'; } else { include 'include/adminheadbar.php'; } ?>
                 <div class="p-3 p-md-4 p-xl-5">
                     <nav class="financial-breadcrumb mb-3" aria-label="Breadcrumb">
                         <a href="dashboard_admin.php" class="text-decoration-none">Dashboard</a>

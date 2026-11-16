@@ -6,36 +6,37 @@ if (!isset($_SESSION['email'])) {
     exit;
 }
 
-if (($_SESSION['role'] ?? '') != 'admin') {
+if (!in_array($_SESSION['role'] ?? '', ['admin', 'accountant'], true)) {
     header("Location: unauthorize.php");
     exit;
 }
 
 $company_id = (int) ($_SESSION['company_id'] ?? 1);
 
-if($_SERVER["REQUEST_METHOD"] == "POST"){
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
-    $accountname = $conn -> real_escape_string(trim($_POST['account_name']));
-    $accountcode = $conn -> real_escape_string(trim($_POST['account_code']));
-    $accountcategory = $conn -> real_escape_string($_POST['account_category']);
+    $accountname = trim($_POST['account_name']);
+    $accountcode = trim($_POST['account_code']);
+    $accountcategory = $_POST['account_category'];
     $parentaccount = ($_POST['parent_account'] ?? '') !== '' ? (int) $_POST['parent_account'] : "NULL";
     $opening_balance = (float) ($_POST['opening_balance'] ?? 0);
-    $opening_balance_side = $conn -> real_escape_string($_POST['opening_balance_side']);
+    $opening_balance_side = $_POST['opening_balance_side'];
     $is_active = isset($_POST['account_active']) ? 1 : 0;
 
-    $conn -> query("INSERT INTO accounts (company_id, parent_account_id, account_code, account_name, opening_balance, opening_balance_side, is_active, account_categorie)
+    $conn->query("INSERT INTO accounts (company_id, parent_account_id, account_code, account_name, opening_balance, opening_balance_side, is_active, account_categorie)
     VALUES ('$company_id', $parentaccount, '$accountcode', '$accountname', '$opening_balance', '$opening_balance_side', '$is_active', '$accountcategory')");
 
-    if($conn -> affected_rows){
+    if ($conn->affected_rows) {
         header('Location: chart_of_accounts.php');
         exit;
     }
 }
 
-$parents = $conn -> query("SELECT account_id, account_code, account_name FROM accounts WHERE company_id = $company_id ORDER BY account_code");
+$parents = $conn->query("SELECT account_id, account_code, account_name FROM accounts WHERE company_id = $company_id ORDER BY account_code");
 ?>
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -46,14 +47,23 @@ $parents = $conn -> query("SELECT account_id, account_code, account_name FROM ac
     <link href="assets/css/account-form.css" rel="stylesheet">
     <link href="assets/css/glassmorphism.css" rel="stylesheet">
 </head>
+
 <body class="bg-body-tertiary dashboard-page account-form-page">
     <div class="container-fluid px-0">
         <div class="row min-vh-100">
             <div class="col-lg-3 col-xl-2 p-0 bg-dark">
-                <?php include 'include/adminsidebar.php'; ?>
+                <?php if (($_SESSION['role'] ?? '') === 'accountant') {
+                    include 'include/accountendsidebar.php';
+                } else {
+                    include 'include/adminsidebar.php';
+                } ?>
             </div>
             <main class="col-12 col-lg-9 col-xl-10 p-0">
-                <?php include 'include/adminheadbar.php'; ?>
+                <?php if (($_SESSION['role'] ?? '') === 'accountant') {
+                    include 'include/accountendheadbar.php';
+                } else {
+                    include 'include/adminheadbar.php';
+                } ?>
                 <div class="account-form-content p-3 p-md-4 p-xl-5">
                     <section class="account-form-hero rounded-4 shadow-sm text-white p-4 p-lg-5 mb-4">
                         <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-4">
@@ -70,7 +80,7 @@ $parents = $conn -> query("SELECT account_id, account_code, account_name FROM ac
                         </div>
                     </section>
 
-                
+
 
                     <div class="row g-4 align-items-start">
                         <div class="col-12 col-xl-8">
@@ -90,7 +100,7 @@ $parents = $conn -> query("SELECT account_id, account_code, account_name FROM ac
                                         <div class="row g-3">
                                             <div class="col-12 col-md-7">
                                                 <label class="form-label" for="account_name">Account name <span class="text-danger">*</span></label>
-                                                <input class="form-control" type="text" id="account_name" name="account_name"  placeholder="e.g. Business checking" maxlength="120" required>
+                                                <input class="form-control" type="text" id="account_name" name="account_name" placeholder="e.g. Business checking" maxlength="120" required>
                                                 <div class="form-text">Choose a clear name you'll recognize in reports.</div>
                                             </div>
                                             <div class="col-12 col-md-5">
@@ -107,19 +117,19 @@ $parents = $conn -> query("SELECT account_id, account_code, account_name FROM ac
                                                     <option value="EQUITY">Equity</option>
                                                     <option value="REVENUE">Revenue</option>
                                                     <option value="EXPENSE">Expense</option>
-                                
+
                                                 </select>
                                             </div>
                                             <div class="col-12 col-md-6">
                                                 <label class="form-label" for="parent_account">Parent account <span class="text-secondary fw-normal">(optional)</span></label>
                                                 <select class="form-select" id="parent_account" name="parent_account">
-    <option value="" selected>No parent account</option>
-    <?php while($p = $parents -> fetch_assoc()): ?>
-        <option value="<?php echo (int) $p['account_id']; ?>">
-            <?php echo htmlspecialchars($p['account_code'] . ' · ' . $p['account_name']); ?>
-        </option>
-    <?php endwhile; ?>
-</select>
+                                                    <option value="" selected>No parent account</option>
+                                                    <?php while ($p = $parents->fetch_assoc()): ?>
+                                                        <option value="<?php echo (int) $p['account_id']; ?>">
+                                                            <?php echo $p['account_code'] . ' · ' . $p['account_name']; ?>
+                                                        </option>
+                                                    <?php endwhile; ?>
+                                                </select>
                                                 <div class="form-text">Use a parent to group related accounts.</div>
                                             </div>
                                         </div>
@@ -213,4 +223,5 @@ $parents = $conn -> query("SELECT account_id, account_code, account_name FROM ac
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
+
 </html>

@@ -6,7 +6,7 @@ if (!isset($_SESSION['email'])) {
     exit;
 }
 
-if (($_SESSION['role'] ?? '') != 'admin') {
+if (!in_array($_SESSION['role'] ?? '', ['admin', 'accountant'], true)) {
     header("Location: unauthorize.php");
     exit;
 }
@@ -19,8 +19,8 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
     $category_id = (int) $_POST['category'];
     $account_id = (int) $_POST['account'];
     $amount = (float) $_POST['amount'];
-    $date = $conn -> real_escape_string($_POST['date']);
-    $description = $conn -> real_escape_string(trim($_POST['description'] ?? ''));
+    $date = $_POST['date'];
+    $description = trim($_POST['description'] ?? '');
     $created_by = isset($_SESSION['user_id']) ? (int) $_SESSION['user_id'] : "NULL";
 
     if($type == 'income'){
@@ -57,10 +57,10 @@ $accounts = $conn -> query("SELECT account_id, account_code, account_name FROM a
     <div class="container-fluid px-0">
         <div class="row min-vh-100">
             <div class="col-lg-3 col-xl-2 p-0 bg-dark">
-                <?php include 'include/adminsidebar.php'; ?>
+                <?php if (($_SESSION['role'] ?? '') === 'accountant') { include 'include/accountendsidebar.php'; } else { include 'include/adminsidebar.php'; } ?>
             </div>
             <main class="col-12 col-lg-9 col-xl-10 p-0">
-                <?php include 'include/adminheadbar.php'; ?>
+                <?php if (($_SESSION['role'] ?? '') === 'accountant') { include 'include/accountendheadbar.php'; } else { include 'include/adminheadbar.php'; } ?>
                 <div class="p-3 p-md-4 p-xl-5">
                     <nav class="transaction-breadcrumb small mb-3" aria-label="Breadcrumb">
                         <a href="dashboard_admin.php" class="text-decoration-none">Dashboard</a>
@@ -149,12 +149,12 @@ $accounts = $conn -> query("SELECT account_id, account_code, account_name FROM a
                                                     <option value="" selected disabled>Select a category</option>
                                                     <optgroup label="Income categories" id="income-cats">
                                                         <?php while($c = $income_cats -> fetch_assoc()): ?>
-                                                            <option value="<?php echo (int) $c['income_category_id']; ?>"><?php echo htmlspecialchars($c['category_name']); ?></option>
+                                                            <option value="<?php echo (int) $c['income_category_id']; ?>"><?php echo $c['category_name']; ?></option>
                                                         <?php endwhile; ?>
                                                     </optgroup>
                                                     <optgroup label="Expense categories" id="expense-cats" disabled>
                                                         <?php while($c = $expense_cats -> fetch_assoc()): ?>
-                                                            <option value="<?php echo (int) $c['expense_category_id']; ?>"><?php echo htmlspecialchars($c['category_name']); ?></option>
+                                                            <option value="<?php echo (int) $c['expense_category_id']; ?>"><?php echo $c['category_name']; ?></option>
                                                         <?php endwhile; ?>
                                                     </optgroup>
                                                 </select>
@@ -164,7 +164,7 @@ $accounts = $conn -> query("SELECT account_id, account_code, account_name FROM a
                                                 <select class="form-select form-select-lg" id="payment-account" name="account" required>
                                                     <option value="" selected disabled>Select an account</option>
                                                     <?php while($a = $accounts -> fetch_assoc()): ?>
-                                                        <option value="<?php echo (int) $a['account_id']; ?>"><?php echo htmlspecialchars($a['account_code'] . ' · ' . $a['account_name']); ?></option>
+                                                        <option value="<?php echo (int) $a['account_id']; ?>"><?php echo $a['account_code'] . ' · ' . $a['account_name']; ?></option>
                                                     <?php endwhile; ?>
                                                 </select>
                                                 <div class="form-text">Choose the account where money was received or paid.</div>

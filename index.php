@@ -9,8 +9,7 @@ if (isset($_POST['submit'])) {
   $email = trim($_POST['email'] ?? '');
   $password = sha1($_POST['password'] ?? '');
 
-  // Role comes from user_roles + roles (users table has no "role" column)
-  $stmt = $conn->prepare("SELECT u.user_id, u.company_id, u.name, r.role_name
+$stmt = $conn->prepare("SELECT u.user_id, u.company_id, u.name, r.role_name
                           FROM users u
                           LEFT JOIN user_roles ur ON ur.user_id = u.user_id
                           LEFT JOIN roles r ON r.role_id = ur.role_id
@@ -25,7 +24,6 @@ if (isset($_POST['submit'])) {
 
     $role = strtolower($row['role_name'] ?? 'employees');
 
-    // Custom roles (e.g. Manager) use the employees dashboard
     if (!in_array($role, ['admin', 'accountant', 'employees'])) {
       $role = 'employees';
     }
@@ -154,19 +152,5 @@ if (isset($_POST['submit'])) {
     </div>
   </main>
 
-  <script>
-    const passwordInput = document.getElementById('password');
-    const togglePassword = document.getElementById('togglePassword');
-    const togglePasswordIcon = togglePassword.querySelector('i');
-
-    togglePassword.addEventListener('click', function () {
-      const showPassword = passwordInput.type === 'password';
-      passwordInput.type = showPassword ? 'text' : 'password';
-      togglePassword.setAttribute('aria-pressed', String(showPassword));
-      togglePassword.setAttribute('aria-label', showPassword ? 'Hide password' : 'Show password');
-      togglePasswordIcon.classList.toggle('bi-eye', !showPassword);
-      togglePasswordIcon.classList.toggle('bi-eye-slash', showPassword);
-    });
-  </script>
 </body>
 </html>

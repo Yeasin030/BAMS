@@ -1,95 +1,107 @@
 <?php $current = basename($_SERVER['PHP_SELF']); ?>
-<aside class="offcanvas-lg offcanvas-start w-100 h-100 min-vh-100 bg-dark text-white" tabindex="-1" id="sidebar">
-  <div class="offcanvas-header d-lg-none">
-    <h2 class="h5 mb-0">BizLedger</h2>
+<aside class="offcanvas-lg offcanvas-start w-100 h-100 min-vh-100 bg-dark text-white border-end border-white border-opacity-10" tabindex="-1" id="sidebar">
+  <div class="offcanvas-header d-lg-none border-bottom border-white border-opacity-10 px-3 py-3">
+    <h2 class="h5 mb-0 fw-bold">BizLedger</h2>
     <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Close menu"></button>
   </div>
-  <div class="offcanvas-body d-flex flex-column p-2">
-    <a class="d-flex align-items-center gap-2 text-white text-decoration-none fw-bold fs-6 mb-3" href="dashboard_admin.php">
-      <i class="bi bi-hexagon-fill text-primary"></i> BizLedger
+
+  <div class="offcanvas-body d-flex flex-column p-3 p-xl-4">
+    <a class="d-flex align-items-center gap-2 text-white text-decoration-none fw-bold fs-5 mb-4" href="dashboard_admin.php">
+      <span class="d-inline-flex align-items-center justify-content-center rounded-3 bg-primary p-2 shadow-sm">
+        <i class="bi bi-hexagon-fill"></i>
+      </span>
+      BizLedger
     </a>
 
-    <nav class="nav flex-column gap-1 small" id="menu">
+    <div class="d-flex align-items-center gap-3 p-3 mb-4 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
+      <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-semibold" style="width: 2.5rem; height: 2.5rem;">RI</div>
+      <div class="flex-grow-1 min-w-0">
+        <div class="fw-semibold text-truncate"><?php echo htmlspecialchars($_SESSION['name'] ?? 'Admin'); ?></div>
+        <small class="text-white-50"><?php echo htmlspecialchars($_SESSION['role'] ?? 'Admin'); ?></small>
+      </div>
+      <i class="bi bi-chevron-down text-white-50 small"></i>
+    </div>
 
-      <a class="nav-link rounded px-2 py-1 <?= $current == 'dashboard_admin.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="dashboard_admin.php">
-        <i class="bi bi-speedometer2"></i>Dashboard
+    <nav class="nav flex-column gap-1 small" id="menu">
+      <a class="nav-link rounded-3 px-3 py-2 <?= $current == 'dashboard_admin.php' ? 'active bg-primary text-white shadow-sm' : 'text-white text-opacity-75' ?>" href="dashboard_admin.php">
+        <i class="bi bi-speedometer2 me-2"></i>Dashboard
       </a>
 
-      <!-- Users & Roles -->
-      <a class="nav-link rounded d-flex align-items-center px-2 py-1 small text-white text-opacity-75" data-bs-toggle="collapse" href="#sub0">
-        <i class="bi bi-people-fill"></i>Users &amp; Roles<i class="bi bi-chevron-down ms-auto small"></i>
+      <div class="mt-2 mb-1 small fw-semibold text-uppercase text-white-50 px-2">Management</div>
+
+      <a class="nav-link rounded-3 px-3 py-2 d-flex align-items-center <?= in_array($current, ['users.php', 'permissions.php', 'employlist.php', 'employedit.php']) ? 'text-white' : 'text-white text-opacity-75' ?>" data-bs-toggle="collapse" href="#sub0" aria-expanded="<?= in_array($current, ['users.php', 'permissions.php', 'employlist.php', 'employedit.php']) ? 'true' : 'false' ?>">
+        <span><i class="bi bi-people-fill me-2"></i>Users &amp; Roles</span>
+        <i class="bi bi-chevron-down ms-auto small"></i>
       </a>
       <div class="collapse <?= in_array($current, ['users.php', 'permissions.php', 'employlist.php', 'employedit.php']) ? 'show' : '' ?>" id="sub0">
-        <a class="nav-link ps-4 py-1 small <?= in_array($current, ['employlist.php', 'employedit.php']) ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="employlist.php">All Users</a>
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'permissions.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="permissions.php">Roles &amp; Permissions</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= in_array($current, ['employlist.php', 'employedit.php']) ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="employlist.php">All Users</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'permissions.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="permissions.php">Roles &amp; Permissions</a>
       </div>
 
-      <!-- Transactions -->
-      <a class="nav-link rounded d-flex align-items-center px-2 py-1 small <?= in_array($current, ['transactions.php', 'add_transaction.php']) ? 'text-white' : 'text-white text-opacity-75' ?>" data-bs-toggle="collapse" href="#sub1" aria-expanded="<?= in_array($current, ['transactions.php', 'add_transaction.php']) ? 'true' : 'false' ?>" aria-controls="sub1">
-        <i class="bi bi-arrow-left-right"></i>Transactions<i class="bi bi-chevron-down ms-auto small"></i>
+      <a class="nav-link rounded-3 px-3 py-2 d-flex align-items-center <?= in_array($current, ['transactions.php', 'add_transaction.php']) ? 'text-white' : 'text-white text-opacity-75' ?>" data-bs-toggle="collapse" href="#sub1" aria-expanded="<?= in_array($current, ['transactions.php', 'add_transaction.php']) ? 'true' : 'false' ?>">
+        <span><i class="bi bi-arrow-left-right me-2"></i>Transactions</span>
+        <i class="bi bi-chevron-down ms-auto small"></i>
       </a>
       <div class="collapse <?= in_array($current, ['transactions.php', 'add_transaction.php']) ? 'show' : '' ?>" id="sub1">
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'transactions.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="transactions.php" <?= $current == 'transactions.php' ? 'aria-current="page"' : '' ?>>All Transactions</a>
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'add_transaction.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="add_transaction.php" <?= $current == 'add_transaction.php' ? 'aria-current="page"' : '' ?>>Add Transaction</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'transactions.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="transactions.php">All Transactions</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'add_transaction.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="add_transaction.php">Add Transaction</a>
       </div>
 
-      <!-- Products & Stock -->
-      <a class="nav-link rounded d-flex align-items-center px-2 py-1 small text-white text-opacity-75" data-bs-toggle="collapse" href="#sub2">
-        <i class="bi bi-box-seam-fill"></i>Products &amp; Stock<i class="bi bi-chevron-down ms-auto small"></i>
+      <a class="nav-link rounded-3 px-3 py-2 d-flex align-items-center <?= in_array($current, ['products.php', 'stock.php']) ? 'text-white' : 'text-white text-opacity-75' ?>" data-bs-toggle="collapse" href="#sub2" aria-expanded="<?= in_array($current, ['products.php', 'stock.php']) ? 'true' : 'false' ?>">
+        <span><i class="bi bi-box-seam-fill me-2"></i>Products &amp; Stock</span>
+        <i class="bi bi-chevron-down ms-auto small"></i>
       </a>
       <div class="collapse <?= in_array($current, ['products.php', 'stock.php']) ? 'show' : '' ?>" id="sub2">
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'products.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="products.php" <?= $current == 'products.php' ? 'aria-current="page"' : '' ?>>Products</a>
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'stock.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="stock.php" <?= $current == 'stock.php' ? 'aria-current="page"' : '' ?>>Stock Levels</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'products.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="products.php">Products</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'stock.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="stock.php">Stock Levels</a>
       </div>
 
-      <!-- Sales & Invoices -->
-      <a class="nav-link rounded d-flex align-items-center px-2 py-1 small text-white text-opacity-75" data-bs-toggle="collapse" href="#sub3">
-        <i class="bi bi-cart-fill"></i>Sales &amp; Invoices<i class="bi bi-chevron-down ms-auto small"></i>
+      <a class="nav-link rounded-3 px-3 py-2 d-flex align-items-center <?= in_array($current, ['sales.php', 'invoices.php', 'customers.php']) ? 'text-white' : 'text-white text-opacity-75' ?>" data-bs-toggle="collapse" href="#sub3" aria-expanded="<?= in_array($current, ['sales.php', 'invoices.php', 'customers.php']) ? 'true' : 'false' ?>">
+        <span><i class="bi bi-cart-fill me-2"></i>Sales &amp; Invoices</span>
+        <i class="bi bi-chevron-down ms-auto small"></i>
       </a>
       <div class="collapse <?= in_array($current, ['sales.php', 'invoices.php', 'customers.php']) ? 'show' : '' ?>" id="sub3">
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'sales.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="sales.php" <?= $current == 'sales.php' ? 'aria-current="page"' : '' ?>>Sales</a>
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'invoices.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="invoices.php" <?= $current == 'invoices.php' ? 'aria-current="page"' : '' ?>>Invoices</a>
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'customers.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="customers.php" <?= $current == 'customers.php' ? 'aria-current="page"' : '' ?>>Customers</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'sales.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="sales.php">Sales</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'invoices.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="invoices.php">Invoices</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'customers.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="customers.php">Customers</a>
       </div>
 
-      <!-- Reports -->
-      <a class="nav-link rounded d-flex align-items-center px-2 py-1 small text-white text-opacity-75" data-bs-toggle="collapse" href="#sub4">
-        <i class="bi bi-bar-chart-fill"></i>Reports<i class="bi bi-chevron-down ms-auto small"></i>
+      <a class="nav-link rounded-3 px-3 py-2 d-flex align-items-center <?= in_array($current, ['profit_loss.php', 'balance_sheet.php']) ? 'text-white' : 'text-white text-opacity-75' ?>" data-bs-toggle="collapse" href="#sub4" aria-expanded="<?= in_array($current, ['profit_loss.php', 'balance_sheet.php']) ? 'true' : 'false' ?>">
+        <span><i class="bi bi-bar-chart-fill me-2"></i>Reports</span>
+        <i class="bi bi-chevron-down ms-auto small"></i>
       </a>
       <div class="collapse <?= in_array($current, ['profit_loss.php', 'balance_sheet.php']) ? 'show' : '' ?>" id="sub4">
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'profit_loss.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="profit_loss.php" <?= $current == 'profit_loss.php' ? 'aria-current="page"' : '' ?>>Profit &amp; Loss</a>
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'balance_sheet.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="balance_sheet.php" <?= $current == 'balance_sheet.php' ? 'aria-current="page"' : '' ?>>Balance Sheet</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'profit_loss.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="profit_loss.php">Profit &amp; Loss</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'balance_sheet.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="balance_sheet.php">Balance Sheet</a>
       </div>
 
-      <!-- Accounts -->
-      <a class="nav-link rounded d-flex align-items-center px-2 py-1 small <?= in_array($current, ['chart_of_accounts.php', 'ledgers.php']) ? 'text-white' : 'text-white text-opacity-75' ?>" data-bs-toggle="collapse" href="#sub5" aria-expanded="<?= in_array($current, ['chart_of_accounts.php', 'ledgers.php']) ? 'true' : 'false' ?>" aria-controls="sub5">
-        <i class="bi bi-bank2"></i>Accounts<i class="bi bi-chevron-down ms-auto small"></i>
+      <a class="nav-link rounded-3 px-3 py-2 d-flex align-items-center <?= in_array($current, ['chart_of_accounts.php', 'add_account.php', 'ledgers.php']) ? 'text-white' : 'text-white text-opacity-75' ?>" data-bs-toggle="collapse" href="#sub5" aria-expanded="<?= in_array($current, ['chart_of_accounts.php', 'add_account.php', 'ledgers.php']) ? 'true' : 'false' ?>">
+        <span><i class="bi bi-bank2 me-2"></i>Accounts</span>
+        <i class="bi bi-chevron-down ms-auto small"></i>
       </a>
-      <div class="collapse <?= in_array($current, ['chart_of_accounts.php', 'ledgers.php']) ? 'show' : '' ?>" id="sub5">
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'chart_of_accounts.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="chart_of_accounts.php" <?= $current == 'chart_of_accounts.php' ? 'aria-current="page"' : '' ?>>Chart of Accounts</a>
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'add_account.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="add_account.php" <?= $current == 'add_account.php' ? 'aria-current="page"' : '' ?>>Add Account</a>
-        <a class="nav-link ps-4 py-1 small rounded <?= $current == 'ledgers.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="ledgers.php" <?= $current == 'ledgers.php' ? 'aria-current="page"' : '' ?>>Ledgers</a>
+      <div class="collapse <?= in_array($current, ['chart_of_accounts.php', 'add_account.php', 'ledgers.php']) ? 'show' : '' ?>" id="sub5">
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'chart_of_accounts.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="chart_of_accounts.php">Chart of Accounts</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'add_account.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="add_account.php">Add Account</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 <?= $current == 'ledgers.php' ? 'active bg-primary text-white' : 'text-white text-opacity-75' ?>" href="ledgers.php">Ledgers</a>
       </div>
 
-      <!-- Settings -->
-      <a class="nav-link rounded d-flex align-items-center px-2 py-1 small text-white text-opacity-75" data-bs-toggle="collapse" href="#sub6">
-        <i class="bi bi-gear-fill"></i>Settings<i class="bi bi-chevron-down ms-auto small"></i>
+      <a class="nav-link rounded-3 px-3 py-2 d-flex align-items-center <?= in_array($current, ['settings_general.php', 'preferences.php']) ? 'text-white' : 'text-white text-opacity-75' ?>" data-bs-toggle="collapse" href="#sub6" aria-expanded="<?= in_array($current, ['settings_general.php', 'preferences.php']) ? 'true' : 'false' ?>">
+        <span><i class="bi bi-gear-fill me-2"></i>Settings</span>
+        <i class="bi bi-chevron-down ms-auto small"></i>
       </a>
       <div class="collapse <?= in_array($current, ['settings_general.php', 'preferences.php']) ? 'show' : '' ?>" id="sub6">
-        <a class="nav-link ps-4 py-1 small rounded text-white text-opacity-75" href="settings_general.php">General</a>
-        <a class="nav-link ps-4 py-1 small rounded text-white text-opacity-75" href="preferences.php">Preferences</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 text-white text-opacity-75" href="settings_general.php">General</a>
+        <a class="nav-link ps-4 py-2 small rounded-3 text-white text-opacity-75" href="preferences.php">Preferences</a>
       </div>
-
     </nav>
 
-    <div class="text-uppercase small fw-semibold text-white-50 px-2 pt-3 pb-1">Admin Tools</div>
-    <nav class="nav flex-column" id="tools">
-    </nav>
+    <div class="text-uppercase small fw-semibold text-white-50 px-2 pt-4 pb-2">Admin Tools</div>
+    <nav class="nav flex-column gap-1" id="tools"></nav>
 
-    <hr class="border-light opacity-25">
-    <nav class="nav flex-column mt-auto">
-      <a class="nav-link rounded px-2 py-1 small text-white text-opacity-75" href="#"><i class="bi bi-headset me-2"></i>Help &amp; Support</a>
-      <a class="nav-link rounded px-2 py-1 small text-white text-opacity-75" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
+    <hr class="border-light border-opacity-25 my-3">
+    <nav class="nav flex-column gap-1 mt-auto">
+      <a class="nav-link rounded-3 px-3 py-2 text-white text-opacity-75" href="#"><i class="bi bi-headset me-2"></i>Help &amp; Support</a>
+      <a class="nav-link rounded-3 px-3 py-2 text-white text-opacity-75" href="logout.php"><i class="bi bi-box-arrow-right me-2"></i>Logout</a>
     </nav>
   </div>
 </aside>
