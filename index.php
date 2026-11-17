@@ -9,15 +9,14 @@ if (isset($_POST['submit'])) {
   $email = trim($_POST['email'] ?? '');
   $password = sha1($_POST['password'] ?? '');
 
-$stmt = $conn->prepare("SELECT u.user_id, u.company_id, u.name, r.role_name
+$result = $conn->execute_query("SELECT u.user_id, u.company_id, u.name, r.role_name
                           FROM users u
                           LEFT JOIN user_roles ur ON ur.user_id = u.user_id
                           LEFT JOIN roles r ON r.role_id = ur.role_id
                           WHERE u.email = ? AND u.password = ?
-                          LIMIT 1");
-  $stmt->bind_param("ss", $email, $password);
-  $stmt->execute();
-  $result = $stmt->get_result();
+                          LIMIT 1", [$email, $password]);
+  
+ 
   $row = $result->fetch_assoc();
 
   if ($row) {

@@ -73,10 +73,7 @@ $products = $conn->query("SELECT * FROM products WHERE company_id = '$company_id
                         </div>
                     </section>
 
-                    <div class="alert inventory-preview-note rounded-3 d-flex align-items-start gap-2 mb-4" role="note">
-                        <i class="bi bi-info-circle-fill mt-1" aria-hidden="true"></i>
-                        <div><strong>UI preview:</strong> The products and form below are sample content only; changes are not saved.</div>
-                    </div>
+                    
 
                     <section class="row g-3 mb-4" aria-label="Product summary">
                         <div class="col-12 col-sm-6 col-xl-3">

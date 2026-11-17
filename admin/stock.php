@@ -89,11 +89,7 @@ $movements = $conn -> query("SELECT m.*, p.product_name, p.product_code FROM sto
                         </div>
                     </section>
 
-                    <div class="alert inventory-preview-note rounded-3 d-flex align-items-start gap-2 mb-4" role="note">
-                        <i class="bi bi-info-circle-fill mt-1" aria-hidden="true"></i>
-                        <div><strong>UI preview:</strong> Summary cards, stock movements and the adjustment form are sample content only; adjustments are not saved.</div>
-                    </div>
-
+                   
                     <section class="row g-3 mb-4" aria-label="Stock summary">
                         <div class="col-12 col-sm-6 col-xl-3">
                             <article class="card inventory-stat rounded-4 h-100">
