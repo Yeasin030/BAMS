@@ -69,7 +69,7 @@ if ($_SESSION['role'] != 'employees') {
                   <div class="row g-2 align-items-start">
                     <div class="col-12 col-md-auto d-flex justify-content-center">
                       <div class="avatar-wrap">
-                        <img src="https://via.placeholder.com/300x300?text=Photo" alt="Md. Tanvir Hasan">
+                        <img src="<?= !empty($_SESSION['profile_image']) ? htmlspecialchars($_SESSION['profile_image']) : 'https://via.placeholder.com/300x300?text=Photo' ?>" alt="<?= htmlspecialchars($_SESSION['name']) ?>">
                         <button type="button" class="avatar-edit" aria-label="Change photo">
                           <i class="bi bi-pencil"></i>
                         </button>

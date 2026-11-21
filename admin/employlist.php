@@ -1,7 +1,10 @@
 <?php
 session_start();
 include_once 'assets/db/bdconfig.php';
-$rowData = $conn->query("SELECT * FROM employees ORDER BY employee_id DESC");
+$rowData = $conn->query("SELECT e.*, u.profile_image
+                         FROM employees e
+                         LEFT JOIN users u ON u.user_id = e.user_id
+                         ORDER BY e.employee_id DESC");
 
 ?>
 
@@ -80,9 +83,13 @@ $rowData = $conn->query("SELECT * FROM employees ORDER BY employee_id DESC");
                                                 <tr>
                                                     <td class="ps-4 py-3">
                                                         <div class="d-flex align-items-center gap-3">
-                                                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary fw-semibold flex-shrink-0" style="width: 2.5rem; height: 2.5rem">
-                                                                <?php echo $initials ; ?>
-                                                            </span>
+                                                            <?php if (!empty($row['profile_image'])) { ?>
+                                                                <img class="rounded-circle object-fit-cover flex-shrink-0" src="<?= htmlspecialchars($row['profile_image']) ?>" alt="<?= htmlspecialchars($row['employee_name']) ?>" style="width: 2.5rem; height: 2.5rem">
+                                                            <?php } else { ?>
+                                                                <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary-subtle text-primary fw-semibold flex-shrink-0" style="width: 2.5rem; height: 2.5rem">
+                                                                    <?php echo $initials ; ?>
+                                                                </span>
+                                                            <?php } ?>
                                                             <div>
                                                                 <div class="fw-semibold"><?php echo $row['employee_name']; ?></div>
                                                                 <div class="small text-secondary"><?php echo $row['login_email'] ; ?></div>

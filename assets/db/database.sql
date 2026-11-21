@@ -61,6 +61,7 @@ CREATE TABLE users (
     email VARCHAR(150) NOT NULL,
     password VARCHAR(255) NOT NULL COMMENT 'Store password_hash() output only',
     status TINYINT NOT NULL DEFAULT 1,
+    profile_image VARCHAR(255) NULL,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
     UNIQUE KEY uq_users_company_email (company_id, email),

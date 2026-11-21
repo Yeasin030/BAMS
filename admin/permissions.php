@@ -11,6 +11,12 @@ $company_id = (int) ($_SESSION['company_id'] ?? 1);
 $error = '';
 $success = '';
 
+// Add the profile image column safely for existing installations.
+$profile_column = $conn->query("SHOW COLUMNS FROM users LIKE 'profile_image'");
+if ($profile_column && $profile_column->num_rows === 0) {
+    $conn->query("ALTER TABLE users ADD COLUMN profile_image VARCHAR(255) NULL AFTER status");
+}
+
 if(isset($_GET['role_added'])){
     $success = "Role added successfully.";
 }
@@ -58,25 +64,61 @@ if($_SERVER["REQUEST_METHOD"] == "POST"){
         $joining_date = ($_POST['joining_date'] ?? '') !== '' ? "'" . $conn -> real_escape_string($_POST['joining_date']) . "'" : "NULL";
         $basic_salary = (float) ($_POST['basic_salary'] ?? 0);
 
-        $selected_role_id = (int) ($_POST['role'] ?? 0);
-        $selected_role = $conn -> query("SELECT role_id, role_name FROM roles WHERE role_id = '$selected_role_id' AND company_id = '$company_id'") -> fetch_assoc();
-        $email_check = $conn -> query("SELECT user_id FROM users WHERE email = '$email'");
+        $profile_image = null;
+        if (isset($_FILES['profile_image']) && ($_FILES['profile_image']['error'] ?? UPLOAD_ERR_NO_FILE) !== UPLOAD_ERR_NO_FILE) {
+            $upload = $_FILES['profile_image'];
+            if ($upload['error'] !== UPLOAD_ERR_OK) {
+                $error = "Profile image upload failed.";
+            } elseif ($upload['size'] > 2 * 1024 * 1024) {
+                $error = "Profile image must be 2 MB or smaller.";
+            } else {
+                $finfo = new finfo(FILEINFO_MIME_TYPE);
+                $mime = $finfo->file($upload['tmp_name']);
+                $allowed = [
+                    'image/jpeg' => 'jpg',
+                    'image/png' => 'png',
+                    'image/webp' => 'webp'
+                ];
+                if (!isset($allowed[$mime])) {
+                    $error = "Only JPG, PNG, and WebP images are allowed.";
+                } else {
+                    $upload_dir = dirname(__DIR__) . '/uploads/profiles';
+                    if (!is_dir($upload_dir) && !mkdir($upload_dir, 0755, true)) {
+                        $error = "Could not create the profile upload directory.";
+                    } else {
+                        $filename = 'user-' . time() . '-' . bin2hex(random_bytes(6)) . '.' . $allowed[$mime];
+                        if (!move_uploaded_file($upload['tmp_name'], $upload_dir . '/' . $filename)) {
+                            $error = "Could not save the profile image.";
+                        } else {
+                            $profile_image = '../uploads/profiles/' . $filename;
+                        }
+                    }
+                }
+            }
+        }
 
-        if(!$selected_role){
-            $error = "Please select a valid role.";
-        } elseif($email_check -> num_rows > 0){
-            $error = "This email is already used by another user.";
-        } else {
+        if ($error === '') {
+            $selected_role_id = (int) ($_POST['role'] ?? 0);
+            $selected_role = $conn -> query("SELECT role_id, role_name FROM roles WHERE role_id = '$selected_role_id' AND company_id = '$company_id'") -> fetch_assoc();
+            $email_check = $conn -> query("SELECT user_id FROM users WHERE email = '$email'");
+
+            if(!$selected_role){
+                $error = "Please select a valid role.";
+            } elseif($email_check -> num_rows > 0){
+                $error = "This email is already used by another user.";
+            } else {
 
             // Role name (used only for employees.login_role)
             $login_role = strtolower($selected_role['role_name']);
             if(!in_array($login_role, ['admin', 'accountant', 'employees'])){
                 $login_role = 'employees';
+                }
             }
 
             // users table has no "role" column - the role is saved in user_roles below
-            $conn -> query("INSERT INTO users (company_id, name, email, password, status)
-            VALUES ('$company_id', '$name', '$email', '$temporary_password', 1)");
+            $safe_profile_image = $profile_image ? "'" . $conn->real_escape_string($profile_image) . "'" : 'NULL';
+            $conn -> query("INSERT INTO users (company_id, name, email, password, status, profile_image)
+            VALUES ('$company_id', '$name', '$email', '$temporary_password', 1, $safe_profile_image)");
 
             $user_id = $conn -> insert_id;
 
@@ -164,7 +206,7 @@ while($r = $role_result -> fetch_assoc()){
                 </div>
               </div>
 
-              <form method="post" class="p-3 p-md-4">
+              <form method="post" enctype="multipart/form-data" class="p-3 p-md-4">
 
                 <!-- Account information -->
                 <div class="mb-4">
@@ -172,6 +214,11 @@ while($r = $role_result -> fetch_assoc()){
                     <i class="bi bi-shield-lock me-1" aria-hidden="true"></i>Account information
                   </h3>
                   <div class="row g-3">
+                    <div class="col-12">
+                      <label class="form-label fw-semibold" for="profile_image">Profile image</label>
+                      <input id="profile_image" type="file" name="profile_image" class="form-control" accept="image/jpeg,image/png,image/webp">
+                      <div class="form-text">JPG, PNG, or WebP. Maximum size: 2 MB.</div>
+                    </div>
                     <div class="col-md-6">
                       <label class="form-label fw-semibold" for="name">Full name</label>
                       <div class="input-group">

@@ -14,7 +14,11 @@
      </a>
 
     <div class="d-flex align-items-center gap-3 mb-4 p-3 rounded-3 bg-white bg-opacity-10">
-       <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center p-2 fw-semibold" aria-label="Account user initials">RI</div>
+       <?php if (!empty($_SESSION['profile_image'])) { ?>
+         <img class="rounded-circle object-fit-cover" src="<?= htmlspecialchars($_SESSION['profile_image']) ?>" alt="<?= htmlspecialchars($_SESSION['name']) ?>" style="width: 2.5rem; height: 2.5rem;">
+       <?php } else { ?>
+         <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center p-2 fw-semibold" aria-label="Account user initials">RI</div>
+       <?php } ?>
        <div class="flex-grow-1">
          <div class="fw-semibold"><?php echo $_SESSION['name']; ?></div>
          <small class="text-white-50">Accountant</small>

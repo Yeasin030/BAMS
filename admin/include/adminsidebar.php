@@ -14,7 +14,11 @@
     </a>
 
     <div class="d-flex align-items-center gap-3 p-3 mb-4 rounded-4 bg-white bg-opacity-10 border border-white border-opacity-10">
-      <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-semibold" style="width: 2.5rem; height: 2.5rem;">RI</div>
+      <?php if (!empty($_SESSION['profile_image'])) { ?>
+        <img class="rounded-circle object-fit-cover" src="<?= htmlspecialchars($_SESSION['profile_image']) ?>" alt="<?= htmlspecialchars($_SESSION['name'] ?? 'User') ?>" style="width: 2.5rem; height: 2.5rem;">
+      <?php } else { ?>
+        <div class="rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fw-semibold" style="width: 2.5rem; height: 2.5rem;">RI</div>
+      <?php } ?>
       <div class="flex-grow-1 min-w-0">
         <div class="fw-semibold text-truncate"><?php echo htmlspecialchars($_SESSION['name'] ?? 'Admin'); ?></div>
         <small class="text-white-50"><?php echo htmlspecialchars($_SESSION['role'] ?? 'Admin'); ?></small>

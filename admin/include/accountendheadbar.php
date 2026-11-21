@@ -17,7 +17,11 @@
 
     <div class="dropdown">
       <a href="#" class="d-flex align-items-center gap-2 text-decoration-none text-reset" id="userMenu" data-bs-toggle="dropdown" aria-expanded="false">
-        <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-semibold" style="width: 2.5rem; height: 2.5rem;">RI</div>
+        <?php if (!empty($_SESSION['profile_image'])) { ?>
+          <img class="rounded-circle object-fit-cover" src="<?= htmlspecialchars($_SESSION['profile_image']) ?>" alt="<?= htmlspecialchars($_SESSION['name']) ?>" style="width: 2.5rem; height: 2.5rem;">
+        <?php } else { ?>
+          <div class="rounded-circle bg-primary-subtle text-primary d-flex align-items-center justify-content-center fw-semibold" style="width: 2.5rem; height: 2.5rem;">RI</div>
+        <?php } ?>
         <div class="d-none d-md-block lh-sm">
           <div class="fw-semibold"><?php echo $_SESSION['name'] ; ?></div>
           <small class="text-muted"><?php echo $_SESSION['role'] ; ?></small>

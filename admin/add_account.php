@@ -12,23 +12,97 @@ if (!in_array($_SESSION['role'] ?? '', ['admin', 'accountant'], true)) {
 }
 
 $company_id = (int) ($_SESSION['company_id'] ?? 1);
+$error_message = '';
+$accountname = '';
+$accountcode = '';
+$accountcategory = '';
+$parentaccount = '';
+$opening_balance = '0';
+$opening_balance_side = 'DEBIT';
+$is_active = true;
 
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
     $accountname = trim($_POST['account_name']);
     $accountcode = trim($_POST['account_code']);
-    $accountcategory = $_POST['account_category'];
-    $parentaccount = ($_POST['parent_account'] ?? '') !== '' ? (int) $_POST['parent_account'] : "NULL";
-    $opening_balance = (float) ($_POST['opening_balance'] ?? 0);
-    $opening_balance_side = $_POST['opening_balance_side'];
+    $accountcategory = trim($_POST['account_category'] ?? '');
+    $parentaccount = ($_POST['parent_account'] ?? '') !== '' ? (int) $_POST['parent_account'] : '';
+    $opening_balance = (string) ($_POST['opening_balance'] ?? '0');
+    $opening_balance_side = $_POST['opening_balance_side'] ?? 'DEBIT';
     $is_active = isset($_POST['account_active']) ? 1 : 0;
 
-    $conn->query("INSERT INTO accounts (company_id, parent_account_id, account_code, account_name, opening_balance, opening_balance_side, is_active, account_categorie)
-    VALUES ('$company_id', $parentaccount, '$accountcode', '$accountname', '$opening_balance', '$opening_balance_side', '$is_active', '$accountcategory')");
+    $allowed_categories = ['ASSET', 'LIABILITY', 'EQUITY', 'REVENUE', 'EXPENSE'];
+    $allowed_sides = ['DEBIT', 'CREDIT'];
+    $opening_balance_value = is_numeric($opening_balance) ? (float) $opening_balance : -1;
 
-    if ($conn->affected_rows) {
-        header('Location: chart_of_accounts.php');
-        exit;
+    if ($accountname === '' || $accountcode === '' || $accountcategory === '') {
+        $error_message = 'Account name, account code, and category are required.';
+    } elseif (!in_array($accountcategory, $allowed_categories, true)) {
+        $error_message = 'Please select a valid account category.';
+    } elseif (!in_array($opening_balance_side, $allowed_sides, true)) {
+        $error_message = 'Please select a valid balance side.';
+    } elseif ($opening_balance_value < 0) {
+        $error_message = 'Opening balance must be zero or a positive amount.';
+    } elseif (strlen($accountname) > 120 || strlen($accountcode) > 30) {
+        $error_message = 'Account name or account code exceeds the allowed length.';
+    } elseif ($parentaccount !== '') {
+        $parent_check = $conn->prepare(
+            "SELECT account_id FROM accounts WHERE account_id = ? AND company_id = ? LIMIT 1"
+        );
+        $parent_check->bind_param('ii', $parentaccount, $company_id);
+        $parent_check->execute();
+        $parent_check->store_result();
+        if ($parent_check->num_rows === 0) {
+            $error_message = 'Please select a valid parent account from this company.';
+        }
+        $parent_check->close();
+    }
+
+    if ($error_message === '') {
+        $duplicate = $conn->prepare(
+            "SELECT account_id FROM accounts WHERE company_id = ? AND account_code = ? LIMIT 1"
+        );
+        $duplicate->bind_param('is', $company_id, $accountcode);
+        $duplicate->execute();
+        $duplicate->store_result();
+
+        if ($duplicate->num_rows > 0) {
+            $error_message = 'Account code "' . htmlspecialchars($accountcode) . '" already exists in this company.';
+        } else {
+            $parent_id = $parentaccount !== '' ? (int) $parentaccount : null;
+            $stmt = $conn->prepare(
+                "INSERT INTO accounts
+                    (company_id, parent_account_id, account_code, account_name, opening_balance, opening_balance_side, is_active, account_categorie)
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+            );
+            $stmt->bind_param(
+                'iissdsis',
+                $company_id,
+                $parent_id,
+                $accountcode,
+                $accountname,
+                $opening_balance_value,
+                $opening_balance_side,
+                $is_active,
+                $accountcategory
+            );
+
+            try {
+                if ($stmt->execute()) {
+                    header('Location: chart_of_accounts.php');
+                    exit;
+                }
+            } catch (mysqli_sql_exception $e) {
+                if ($e->getCode() === 1062) {
+                    $error_message = 'Account code "' . htmlspecialchars($accountcode) . '" already exists in this company.';
+                } else {
+                    error_log('Failed to create account: ' . $e->getMessage());
+                    $error_message = 'Unable to create the account. Please try again.';
+                }
+            }
+            $stmt->close();
+        }
+        $duplicate->close();
     }
 }
 
@@ -97,35 +171,41 @@ $parents = $conn->query("SELECT account_id, account_code, account_name FROM acco
                                     </div>
 
                                     <form class="account-entry-form" method="post">
+                                        <?php if ($error_message !== ''): ?>
+                                            <div class="alert alert-danger d-flex align-items-center mb-4" role="alert">
+                                                <i class="bi bi-exclamation-triangle-fill me-2" aria-hidden="true"></i>
+                                                <div><?php echo $error_message; ?></div>
+                                            </div>
+                                        <?php endif; ?>
                                         <div class="row g-3">
                                             <div class="col-12 col-md-7">
                                                 <label class="form-label" for="account_name">Account name <span class="text-danger">*</span></label>
-                                                <input class="form-control" type="text" id="account_name" name="account_name" placeholder="e.g. Business checking" maxlength="120" required>
+                                                <input class="form-control" type="text" id="account_name" name="account_name" placeholder="e.g. Business checking" maxlength="120" value="<?php echo htmlspecialchars($accountname, ENT_QUOTES, 'UTF-8'); ?>" required>
                                                 <div class="form-text">Choose a clear name you'll recognize in reports.</div>
                                             </div>
                                             <div class="col-12 col-md-5">
                                                 <label class="form-label" for="account_code">Account code <span class="text-danger">*</span></label>
-                                                <input class="form-control" type="text" id="account_code" name="account_code" placeholder="e.g. 1010" maxlength="30" required>
+                                                <input class="form-control" type="text" id="account_code" name="account_code" placeholder="e.g. 1010" maxlength="30" value="<?php echo htmlspecialchars($accountcode, ENT_QUOTES, 'UTF-8'); ?>" required>
                                                 <div class="form-text">Use a unique code in your chart.</div>
                                             </div>
                                             <div class="col-12 col-md-6">
                                                 <label class="form-label" for="account_category">Account category <span class="text-danger">*</span></label>
                                                 <select class="form-select" id="account_category" name="account_category" required>
                                                     <option value="" selected disabled>Select a category</option>
-                                                    <option value="ASSET">Asset</option>
-                                                    <option value="LIABILITY">Liability</option>
-                                                    <option value="EQUITY">Equity</option>
-                                                    <option value="REVENUE">Revenue</option>
-                                                    <option value="EXPENSE">Expense</option>
+                                                    <option value="ASSET" <?php echo $accountcategory === 'ASSET' ? 'selected' : ''; ?>>Asset</option>
+                                                    <option value="LIABILITY" <?php echo $accountcategory === 'LIABILITY' ? 'selected' : ''; ?>>Liability</option>
+                                                    <option value="EQUITY" <?php echo $accountcategory === 'EQUITY' ? 'selected' : ''; ?>>Equity</option>
+                                                    <option value="REVENUE" <?php echo $accountcategory === 'REVENUE' ? 'selected' : ''; ?>>Revenue</option>
+                                                    <option value="EXPENSE" <?php echo $accountcategory === 'EXPENSE' ? 'selected' : ''; ?>>Expense</option>
 
                                                 </select>
                                             </div>
                                             <div class="col-12 col-md-6">
                                                 <label class="form-label" for="parent_account">Parent account <span class="text-secondary fw-normal">(optional)</span></label>
                                                 <select class="form-select" id="parent_account" name="parent_account">
-                                                    <option value="" selected>No parent account</option>
+                                                    <option value="" <?php echo $parentaccount === '' ? 'selected' : ''; ?>>No parent account</option>
                                                     <?php while ($p = $parents->fetch_assoc()): ?>
-                                                        <option value="<?php echo (int) $p['account_id']; ?>">
+                                                        <option value="<?php echo (int) $p['account_id']; ?>" <?php echo (string) $parentaccount === (string) $p['account_id'] ? 'selected' : ''; ?>>
                                                             <?php echo $p['account_code'] . ' · ' . $p['account_name']; ?>
                                                         </option>
                                                     <?php endwhile; ?>
@@ -145,16 +225,16 @@ $parents = $conn->query("SELECT account_id, account_code, account_name FROM acco
                                                 <label class="form-label" for="opening_balance">Amount</label>
                                                 <div class="input-group">
                                                     <span class="input-group-text">$</span>
-                                                    <input class="form-control" type="number" id="opening_balance" name="opening_balance" min="0" step="0.01" placeholder="0.00">
+                                                    <input class="form-control" type="number" id="opening_balance" name="opening_balance" min="0" step="0.01" placeholder="0.00" value="<?php echo htmlspecialchars((string) $opening_balance, ENT_QUOTES, 'UTF-8'); ?>">
                                                 </div>
                                                 <div class="form-text">Enter 0.00 if there is no opening balance.</div>
                                             </div>
                                             <fieldset class="col-12 col-md-6">
                                                 <legend class="form-label">Balance side</legend>
                                                 <div class="account-side-choice d-flex rounded-3 p-1">
-                                                    <input class="btn-check" type="radio" name="opening_balance_side" id="balance-debit" value="DEBIT" checked>
+                                                    <input class="btn-check" type="radio" name="opening_balance_side" id="balance-debit" value="DEBIT" <?php echo $opening_balance_side === 'DEBIT' ? 'checked' : ''; ?>>
                                                     <label class="btn flex-fill" for="balance-debit"><i class="bi bi-box-arrow-in-down me-1" aria-hidden="true"></i>Debit</label>
-                                                    <input class="btn-check" type="radio" name="opening_balance_side" id="balance-credit" value="CREDIT">
+                                                    <input class="btn-check" type="radio" name="opening_balance_side" id="balance-credit" value="CREDIT" <?php echo $opening_balance_side === 'CREDIT' ? 'checked' : ''; ?>>
                                                     <label class="btn flex-fill" for="balance-credit"><i class="bi bi-box-arrow-up-right me-1" aria-hidden="true"></i>Credit</label>
                                                 </div>
                                             </fieldset>
@@ -168,7 +248,7 @@ $parents = $conn->query("SELECT account_id, account_code, account_name FROM acco
                                                 <p class="small text-secondary mb-0">Inactive accounts won't appear in new transactions.</p>
                                             </div>
                                             <div class="form-check form-switch account-status-switch">
-                                                <input class="form-check-input" type="checkbox" role="switch" id="account_active" name="account_active" checked>
+                                                <input class="form-check-input" type="checkbox" role="switch" id="account_active" name="account_active" <?php echo $is_active ? 'checked' : ''; ?>>
                                                 <label class="form-check-label fw-semibold" for="account_active">Active</label>
                                             </div>
                                         </div>

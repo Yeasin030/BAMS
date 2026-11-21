@@ -9,7 +9,12 @@ if (isset($_POST['submit'])) {
   $email = trim($_POST['email'] ?? '');
   $password = sha1($_POST['password'] ?? '');
 
-$result = $conn->execute_query("SELECT u.user_id, u.company_id, u.name, r.role_name
+$profile_column = $conn->query("SHOW COLUMNS FROM users LIKE 'profile_image'");
+if ($profile_column && $profile_column->num_rows === 0) {
+  $conn->query("ALTER TABLE users ADD COLUMN profile_image VARCHAR(255) NULL AFTER status");
+}
+
+$result = $conn->execute_query("SELECT u.user_id, u.company_id, u.name, u.profile_image, r.role_name
                           FROM users u
                           LEFT JOIN user_roles ur ON ur.user_id = u.user_id
                           LEFT JOIN roles r ON r.role_id = ur.role_id
@@ -33,6 +38,7 @@ $result = $conn->execute_query("SELECT u.user_id, u.company_id, u.name, r.role_n
     $_SESSION['email'] = $email;
     $_SESSION['name'] = $row['name'];
     $_SESSION['role'] = $role;
+    $_SESSION['profile_image'] = $row['profile_image'] ?: '';
 
     if ($role == 'admin') {
       $_SESSION['url'] = 'admin/dashboard_admin.php';

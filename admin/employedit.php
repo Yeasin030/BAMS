@@ -47,7 +47,10 @@ if (($_SESSION['role'] ?? '') != 'admin') {
         echo "<div class='massage'>Updat Complaterd</div>";
     };
    }
-        $data = $conn->query("SELECT * FROM employees WHERE employee_id = '$id' ");
+        $data = $conn->query("SELECT e.*, u.profile_image
+                              FROM employees e
+                              LEFT JOIN users u ON u.user_id = e.user_id
+                              WHERE e.employee_id = '$id'");
         $row = $data->fetch_object();
     
 
@@ -186,7 +189,11 @@ if (($_SESSION['role'] ?? '') != 'admin') {
                                 <div class="card-body p-4">
                                     <h2 class="h6 fw-bold mb-3" id="profile-preview-title">Profile preview</h2>
                                     <div class="d-flex align-items-center gap-3">
-                                        <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white fw-semibold flex-shrink-0" style="width: 3.25rem; height: 3.25rem">AM</span>
+                                        <?php if (!empty($row->profile_image)) { ?>
+                                            <img class="rounded-circle object-fit-cover flex-shrink-0" src="<?= htmlspecialchars($row->profile_image) ?>" alt="<?= htmlspecialchars($row->employee_name) ?>" style="width: 3.25rem; height: 3.25rem">
+                                        <?php } else { ?>
+                                            <span class="d-inline-flex align-items-center justify-content-center rounded-circle bg-primary text-white fw-semibold flex-shrink-0" style="width: 3.25rem; height: 3.25rem">AM</span>
+                                        <?php } ?>
                                         <div class="min-w-0">
                                             <div class="fw-semibold"><?php echo $row->employee_name; ?></div>
                                             <div class="small text-secondary"><?php echo $row->designation; ?></div>
