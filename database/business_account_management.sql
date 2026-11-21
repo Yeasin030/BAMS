@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 15, 2026 at 11:59 AM
+-- Generation Time: Nov 21, 2026 at 09:13 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.33
 
@@ -49,7 +49,8 @@ INSERT INTO `accounts` (`account_id`, `company_id`, `parent_account_id`, `accoun
 (1, 1, 1000, '1002', 'gokgok', 456123.00, 'DEBIT', 1, '2026-11-12 04:34:41', '2026-11-12 04:34:41', 'LIABILITY'),
 (2, 1, NULL, '452', 'rokon', 520235.00, 'CREDIT', 1, '2026-11-12 04:39:05', '2026-11-12 04:39:05', 'ASSET'),
 (3, 1, NULL, '4000', 'Service revenue', 0.00, 'DEBIT', 1, '2026-11-12 06:46:41', '2026-11-12 06:46:41', 'REVENUE'),
-(4, 1, NULL, '5000', 'Office expenses', 0.00, 'DEBIT', 1, '2026-11-12 06:46:41', '2026-11-12 06:46:41', 'EXPENSE');
+(4, 1, NULL, '5000', 'Office expenses', 0.00, 'DEBIT', 1, '2026-11-12 06:46:41', '2026-11-12 06:46:41', 'EXPENSE'),
+(5, 1, NULL, '4500', 'saklin', 45000.00, 'DEBIT', 1, '2026-11-16 05:28:43', '2026-11-16 05:28:43', 'REVENUE');
 
 -- --------------------------------------------------------
 
@@ -155,7 +156,8 @@ INSERT INTO `employees` (`employee_id`, `company_id`, `user_id`, `employee_name`
 (16, 1, 28, 'Saad', '01755329910', 'admin', 'admin', '2026-11-15', 500000.00, 1, '2026-11-15 04:25:37', '2026-11-15 04:25:37', 'saad@gmail.com', 'fbd6b3466f628924f9e89af9ea28ac8dbce8890b', 'admin'),
 (17, 1, 29, 'Yeasin Arafat', '01755329910', 'IT', 'WEB laraval', NULL, 45000.01, 1, '2026-11-15 04:47:36', '2026-11-15 04:47:36', 'yeasinarafat5331@gmail.com', '9651b57f1c7d1d77ac1f03cd78a39ee31ea83b3a', 'employees'),
 (18, 1, 30, 'rokon', '01576999127', 'As.hr', 'HR', '2026-11-02', 52000.00, 1, '2026-11-15 05:38:07', '2026-11-15 05:38:07', 'rokon@gmail.com', '892e0efdb2bd3d90d4a3ab598e8dd4b8baa74025', 'employees'),
-(19, 1, 31, 'admin', '01576999127', 'admin', 'admin', '2026-11-03', 45000.00, 1, '2026-11-15 05:40:11', '2026-11-15 05:40:11', 'admin@gmail.com', 'd033e22ae348aeb5660fc2140aec35850c4da997', 'admin');
+(19, 1, 31, 'admin', '01576999127', 'admin', 'admin', '2026-11-03', 45000.00, 1, '2026-11-15 05:40:11', '2026-11-15 05:40:11', 'admin@gmail.com', 'd033e22ae348aeb5660fc2140aec35850c4da997', 'admin'),
+(21, 1, 33, 'Accountend', '01576999127', 'accountent', 'As.Accountent', '2026-11-03', 45250.00, 1, '2026-11-16 03:07:08', '2026-11-16 03:07:08', 'accountent@gmail.com', '02f7eb57679e95c8d3514c984ccb7fe92f3495fc', 'accountant');
 
 --
 -- Triggers `employees`
@@ -211,6 +213,13 @@ CREATE TABLE `expenses` (
   `created_by` int UNSIGNED DEFAULT NULL,
   `created_at` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Dumping data for table `expenses`
+--
+
+INSERT INTO `expenses` (`expense_id`, `company_id`, `expense_category_id`, `account_id`, `amount`, `expense_date`, `description`, `receipt_file`, `journal_id`, `created_by`, `created_at`) VALUES
+(1, 1, 3, 2, 5000.00, '2026-11-17', '', NULL, NULL, 31, '2026-11-17 07:10:54');
 
 -- --------------------------------------------------------
 
@@ -579,7 +588,8 @@ INSERT INTO `users` (`user_id`, `company_id`, `name`, `email`, `password`, `stat
 (28, 1, 'Saad', 'saad@gmail.com', 'fbd6b3466f628924f9e89af9ea28ac8dbce8890b', 1, '2026-11-15 04:25:37', '2026-11-15 04:25:37'),
 (29, 1, 'Yeasin Arafat', 'yeasinarafat5331@gmail.com', '9651b57f1c7d1d77ac1f03cd78a39ee31ea83b3a', 1, '2026-11-15 04:47:36', '2026-11-15 04:47:36'),
 (30, 1, 'rokon', 'rokon@gmail.com', '892e0efdb2bd3d90d4a3ab598e8dd4b8baa74025', 1, '2026-11-15 05:38:07', '2026-11-15 05:38:07'),
-(31, 1, 'admin', 'admin@gmail.com', 'd033e22ae348aeb5660fc2140aec35850c4da997', 1, '2026-11-15 05:40:11', '2026-11-15 05:40:11');
+(31, 1, 'admin', 'admin@gmail.com', 'd033e22ae348aeb5660fc2140aec35850c4da997', 1, '2026-11-15 05:40:11', '2026-11-15 05:40:11'),
+(33, 1, 'Accountend', 'accountent@gmail.com', '02f7eb57679e95c8d3514c984ccb7fe92f3495fc', 1, '2026-11-16 03:07:08', '2026-11-16 03:07:08');
 
 -- --------------------------------------------------------
 
@@ -601,7 +611,8 @@ INSERT INTO `user_roles` (`user_role_id`, `user_id`, `role_id`) VALUES
 (1, 28, 1),
 (2, 29, 3),
 (3, 30, 3),
-(4, 31, 1);
+(4, 31, 1),
+(6, 33, 2);
 
 --
 -- Indexes for dumped tables
@@ -814,7 +825,7 @@ ALTER TABLE `user_roles`
 -- AUTO_INCREMENT for table `accounts`
 --
 ALTER TABLE `accounts`
-  MODIFY `account_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `account_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `audit_logs`
@@ -838,13 +849,13 @@ ALTER TABLE `customers`
 -- AUTO_INCREMENT for table `employees`
 --
 ALTER TABLE `employees`
-  MODIFY `employee_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=20;
+  MODIFY `employee_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=22;
 
 --
 -- AUTO_INCREMENT for table `expenses`
 --
 ALTER TABLE `expenses`
-  MODIFY `expense_id` int UNSIGNED NOT NULL AUTO_INCREMENT;
+  MODIFY `expense_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
 -- AUTO_INCREMENT for table `expense_categories`
@@ -946,13 +957,13 @@ ALTER TABLE `suppliers`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `user_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=34;
 
 --
 -- AUTO_INCREMENT for table `user_roles`
 --
 ALTER TABLE `user_roles`
-  MODIFY `user_role_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `user_role_id` int UNSIGNED NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
 -- Constraints for dumped tables
